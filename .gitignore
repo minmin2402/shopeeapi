@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Runtime SDK Local Vault & Temp
+minsign_data/
+devices_vault.json
+*.tmp.mp4
+
+# C# / .NET / C++ build outputs (keep bin/win-x64/minsign_sdk.dll tracked!)
+obj/
+*.user
+*.suo
+*.pdb
+*.exe
+*.obj
+*.ilk
+
+# OS
+.DS_Store
+Thumbs.db
