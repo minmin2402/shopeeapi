@@ -107,7 +107,15 @@ class MinSignClient:
         return parsed
 
     def invoke(self, action: str, payload: Optional[Dict[str, Any]] = None, raise_on_error: bool = True) -> Dict[str, Any]:
-        body = json.dumps(payload or {}, ensure_ascii=False).encode("utf-8")
+        req = dict(payload or {})
+        if isinstance(req.get("cookie"), (dict, list)):
+            req["cookie"] = json.dumps(req["cookie"], ensure_ascii=False)
+        if isinstance(req.get("cookies"), list):
+            req["cookies"] = [
+                json.dumps(c, ensure_ascii=False) if isinstance(c, (dict, list)) else str(c)
+                for c in req["cookies"]
+            ]
+        body = json.dumps(req, ensure_ascii=False).encode("utf-8")
         ptr = self._lib.MinSign_Invoke(action.encode("utf-8"), body)
         return self._consume_ptr(ptr, raise_on_error=raise_on_error)
 
