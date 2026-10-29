@@ -155,6 +155,39 @@ class MinSignClient:
     def get_shop_products(self, shop_id: str = "", shop_url: str = "", limit: int = 30, offset: int = 0, proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
         return self.invoke("get_shop_products", {"shopId": str(shop_id or ""), "shopUrl": shop_url, "limit": limit, "offset": offset, "proxy": proxy, "cookie": cookie, "country": country})["data"]
 
+    def get_shop_newest_products(
+        self,
+        shop_url: str = "",
+        shop_id: str = "",
+        username: str = "",
+        limit: int = 30,
+        offset: int = 0,
+        since_item_id: str = "",
+        since_timestamp: int = 0,
+        within_hours: int = 0,
+        proxy: str = "",
+        cookie: str = "",
+        country: str = "",
+        account_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "get_shop_newest_products",
+            {
+                "shopUrl": shop_url,
+                "shopId": str(shop_id or ""),
+                "username": username,
+                "limit": limit,
+                "offset": offset,
+                "sinceItemId": str(since_item_id or ""),
+                "sinceTimestamp": since_timestamp,
+                "withinHours": within_hours,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+                "accountId": account_id,
+            },
+        )["data"]
+
     def get_shop_categories(self, shop_id: str = "", shop_url: str = "", proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
         return self.invoke("get_shop_categories", {"shopId": str(shop_id or ""), "shopUrl": shop_url, "proxy": proxy, "cookie": cookie, "country": country})["data"]
 
@@ -222,6 +255,39 @@ class MinSignClient:
 
     def get_video_detail(self, video_url: str = "", post_id: str = "", proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
         return self.invoke("get_video_detail", {"videoUrl": video_url, "postId": post_id, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+
+    def get_shop_videos(
+        self,
+        shop_url: str = "",
+        shop_id: str = "",
+        username: str = "",
+        user_id: str = "",
+        limit: int = 20,
+        page_token: str = "",
+        max_pages: int = 1,
+        include_product_videos: bool = True,
+        proxy: str = "",
+        cookie: str = "",
+        country: str = "",
+        account_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "get_shop_videos",
+            {
+                "shopUrl": shop_url,
+                "shopId": str(shop_id or ""),
+                "username": username,
+                "userId": str(user_id or ""),
+                "limit": limit,
+                "pageToken": page_token,
+                "maxPages": max_pages,
+                "includeProductVideos": include_product_videos,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+                "accountId": account_id,
+            },
+        )["data"]
 
     def get_channel_and_hashtag_videos(self, mode: str = "channel", request_user_id: str = "", hashtag_id: str = "", limit: int = 20, proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
         return self.invoke("get_channel_and_hashtag_videos", {"mode": mode, "requestUserId": request_user_id, "hashtagId": hashtag_id, "limit": limit, "proxy": proxy, "cookie": cookie, "country": country})["data"]

@@ -39,6 +39,30 @@ namespace ShopeeApiDemo
             var prod = detail.GetProperty("data").GetProperty("product");
             Console.WriteLine("3. Tên SP: " + prod.GetProperty("name").GetString());
             Console.WriteLine("   Giá VNĐ: " + prod.GetProperty("priceVnd").GetInt64());
+
+            // [MỚI v1.1.0 - AFFILIATE] Lấy sản phẩm mới nhất của Shop theo thời gian thực (hỗ trợ lọc sinceItemId)
+            JsonElement newest = sdk.GetShopNewestProducts(new
+            {
+                shopId = "1023922469",
+                limit = 10,
+                sinceItemId = "", // Truyền latestItemId lần quét trước để chỉ nhận SP vừa đăng mới!
+                cookie = "",      // Khuyên truyền Cookie Shopee phụ + Proxy để mở full tab Mới Nhất realtime
+                proxy = "",
+                country = "VN"
+            });
+            Console.WriteLine("4. SP mới nhất của Shop: " + newest.GetProperty("data").GetProperty("latestItemId").GetString());
+
+            // [MỚI v1.1.0 - AFFILIATE] Lấy danh sách Video của Shop (kèm link .mp4 gốc không watermark & SP gắn giỏ)
+            JsonElement shopVideos = sdk.GetShopVideos(new
+            {
+                username = "lovito.vn",
+                limit = 20,
+                maxPages = 1,
+                cookie = "", // Truyền Cookie Shopee để lấy toàn bộ timeline Shopee Video của Shop
+                proxy = "",
+                country = "VN"
+            });
+            Console.WriteLine("5. Creator UserId kênh Video Shop: " + shopVideos.GetProperty("data").GetProperty("userId").GetString());
         }
     }
 }

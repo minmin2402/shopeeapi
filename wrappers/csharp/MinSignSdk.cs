@@ -93,10 +93,12 @@ namespace MinSign
         public JsonElement RemoveLocalDevice(string accountKey) => Invoke("remove_local_device", new { accountKey });
         public JsonElement SignRaw(object request) => Invoke("sign_raw", request);
 
-        // Nhóm Sản Phẩm, Shop, Voucher, Tìm Kiếm
+        // Nhóm Sản Phẩm, Shop, Voucher, Tìm Kiếm & Affiliate Theo Dõi Shop
         public JsonElement GetProductDetail(object request) => Invoke("get_product_detail", request);
         public JsonElement GetShopOverview(object request) => Invoke("get_shop_overview", request);
         public JsonElement GetShopProducts(object request) => Invoke("get_shop_products", request);
+        public JsonElement GetShopNewestProducts(object request) => Invoke("get_shop_newest_products", request);
+        public JsonElement GetShopVideos(object request) => Invoke("get_shop_videos", request);
         public JsonElement GetShopCategories(object request) => Invoke("get_shop_categories", request);
         public JsonElement GetShopVouchers(object request) => Invoke("get_shop_vouchers", request);
         public JsonElement SearchProducts(object request) => Invoke("search_products", request);

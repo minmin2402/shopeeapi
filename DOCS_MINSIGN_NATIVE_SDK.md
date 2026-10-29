@@ -1,6 +1,6 @@
-# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.0)
+# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.1.0)
 
-**Phiên bản:** `1.0.0` (Windows x64 Native Shared Library — C-ABI Standard)  
+**Phiên bản:** `1.1.0` (Windows x64 Native Shared Library — C-ABI Standard · **23 Hàm Dựng Sẵn**)  
 **Máy chủ Ký Bảo Mật Mặc Định:** `https://vip-sign.minmintool.site` (Yêu cầu mã `X-API-Key`)  
 **Hỗ trợ 8 Thị trường Shopee:** `VN`, `TW`, `PH`, `MY`, `TH`, `ID`, `SG`, `BR`  
 **Ngôn ngữ tương thích 100%:** `C# (.NET Framework / .NET 6-9)`, `Python`, `Node.js / Electron`, `C / C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`, `Go`...
@@ -85,6 +85,7 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | **2. Sản Phẩm & Gian Hàng (8 Quốc Gia)** | `MinSign_GetProductDetail(json)` | `get_product_detail` | Lấy chi tiết sản phẩm đầy đủ (tên, giá, tồn kho, đã bán, biến thể `models`, bộ ảnh HD, video, thông tin Shop). Hỗ trợ truyền link rút gọn, link SP hoặc `shopId` + `itemId`. |
 | | `MinSign_GetShopOverview(json)` | `get_shop_overview` | Lấy hồ sơ gian hàng từ `shopUrl`, `shopId` hoặc `username` (tự động giải `shopId -> username` cho cả VN, TW, PH, MY, TH, ID, SG, BR). |
 | | `MinSign_GetShopProducts(json)` | `get_shop_products` | Lấy danh sách sản phẩm trong gian hàng có phân trang (`limit`, `offset`) + fallback tìm kiếm nội bộ shop. |
+| | `MinSign_GetShopNewestProducts(json)` | `get_shop_newest_products` | **[MỚI v1.1 — Chuyên Dụng Affiliate]** Lấy danh sách **sản phẩm MỚI NHẤT vừa lên kệ của Shop theo thời gian thực** (kết hợp 3 tầng: `rcmd_items?sort_type=2` + `affiliate/offer/product/list` kèm hoa hồng + Zero-Cookie Index). Hỗ trợ lọc `sinceItemId`, `sinceTimestamp`, `withinHours` để làm Bot canh hàng mới tự động! |
 | | `MinSign_GetShopCategories(json)` | `get_shop_categories` | Lấy danh sách danh mục con của gian hàng (`get_categories`). |
 | | `MinSign_GetShopVouchers(json)` | `get_shop_vouchers` | Quét toàn bộ mã giảm giá / Voucher đang mở của gian hàng (`get_shop_vouchers_by_shopid`). |
 | | `MinSign_SearchProducts(json)` | `search_products` | Tìm kiếm sản phẩm theo từ khóa (`keyword`, `sortBy`: `relevancy`/`sales`/`ctime`/`price`, `page`, `limit`). |
@@ -96,9 +97,60 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | **4. Buff View & Kênh Shopee Video** | `MinSign_BuffVideoView(json)` | `buff_video_view` | Thực thi chuẩn **4 bước đẩy 1 lượt xem Shopee Video hợp lệ**: Giải link `shp.ee` $\rightarrow$ Ký & mở `timeline/single` lấy `view_token` $\rightarrow$ Đọc luồng byte MP4 thật (`Range: bytes=0-65535`) qua Proxy $\rightarrow$ Ký & bắn gói sự kiện `video_impression` + `video_play` + `video_play_time` lên `c-api-bit`. |
 | | `MinSign_BuffVideoBatch(json)` | `buff_video_batch` | Khởi chạy **Goroutine Worker Pool đa luồng ngay trong DLL** để đẩy `targetViews` lượt xem song song với danh sách `proxies[]` và `cookies[]` xoay vòng tự động. |
 | | `MinSign_GetVideoDetail(json)` | `get_video_detail` | Lấy thông tin chi tiết 1 bài đăng Shopee Video (lượt xem hiện tại, tim, bình luận, tác giả, `mp4Url`, `viewToken`). |
+| | `MinSign_GetShopVideos(json)` | `get_shop_videos` | **[MỚI v1.1 — Chuyên Dụng Affiliate]** Lấy **danh sách toàn bộ Video của Shop** (`shopUrl` / `shopId` / `username` $\rightarrow$ tự động giải mã sang kênh Shopee Video `userId` + quét `/api/v2/timeline/me` hỗ trợ lật nhiều trang `maxPages`). Trả sẵn link `.mp4` CDN gốc không watermark (`mp4Url`), lượt xem/tim/comment và danh sách SP gắn giỏ vàng (`attachedProducts[]`)! |
 | | `MinSign_GetChannelAndHashtagVideos(json)` | `get_channel_and_hashtag_videos` | Quét danh sách toàn bộ video của 1 Kênh người dùng (`mode: "channel"`) hoặc theo Hashtag (`mode: "hashtag"`). |
 | **5. Giỏ Hàng & Mở Rộng** | `MinSign_AddToCart(json)` | `add_to_cart` | Tự động ký POST và thêm sản phẩm / phân loại (`modelId`) vào giỏ hàng tài khoản Shopee. |
 | | `MinSign_ExecuteSignedRequest(json)` | `execute_signed_request` | **Hàm vạn năng**: Cho phép coder truyền bất kỳ URL API Shopee GET/POST nào — SDK tự gắn máy cố định của Acc, tự xin chữ ký Server và tự bắn qua Proxy bằng `uTLS` Android! |
+
+---
+
+## 4.1. Đặc Tả Chi Tiết 2 API Affiliate Chuyên Biệt Mới Nhất (`v1.1.0`)
+
+### A. API Lấy Sản Phẩm Mới Nhất Của Shop Theo Thời Gian Thực (`get_shop_newest_products`)
+Phục vụ các hệ thống **Affiliate / Reup Video / Bot Canh Hàng Mới Lên Kệ** muốn phát hiện ngay lập tức sản phẩm vừa được Shop đăng bán để tạo link Affiliate hoặc gắn giỏ hàng Shopee Video đầu tiên:
+
+- **Input JSON (`MinSign_GetShopNewestProducts`)**:
+  ```json
+  {
+    "shopUrl": "https://shopee.vn/lovito.vn",
+    "shopId": "",
+    "username": "",
+    "limit": 30,
+    "offset": 0,
+    "sinceItemId": "28419201122",
+    "sinceTimestamp": 0,
+    "withinHours": 24,
+    "cookie": "SPC_U=...; SPC_ST=...;",
+    "proxy": "http://user:pass@ip:port",
+    "country": "VN"
+  }
+  ```
+  - **Mẹo chạy Bot thời gian thực**: Lưu lại trường `latestItemId` của lần quét trước và truyền vào `sinceItemId` ở lần quét sau — SDK sẽ chỉ trả về đúng các sản phẩm **mới hơn** vừa lên kệ (`hasNewItems: true/false`)!
+  - **Về Cookie**: Truyền kèm `cookie` của bất kỳ nick phụ Shopee nào còn sống + `proxy` sẽ mở khóa 100% tab **Mới Nhất (`sort_type=2`)** trực tiếp trên App Shopee và lấy kèm tỷ lệ hoa hồng Affiliate (`commissionRateRaw`). Nếu gọi không Cookie tại `VN`, SDK tự động chuyển sang tầng Public Shop Index sắp xếp theo `itemId` giảm dần.
+
+### B. API Lấy Danh Sách Video Của Shop (`get_shop_videos`)
+Chỉ cần truyền `shopUrl`, `shopId` hoặc `username` của Shop — SDK sẽ **tự động ánh xạ sang `userId` (`request_user_id`) của kênh Shopee Video thuộc Shop đó**, ký bộ Header Shopee Video RN (`business_id=6`) và quét danh sách bài đăng:
+
+- **Input JSON (`MinSign_GetShopVideos`)**:
+  ```json
+  {
+    "shopUrl": "https://shopee.vn/lovito.vn",
+    "limit": 20,
+    "pageToken": "",
+    "maxPages": 3,
+    "includeProductVideos": true,
+    "cookie": "SPC_U=...; SPC_ST=...;",
+    "proxy": "http://user:pass@ip:port",
+    "country": "VN"
+  }
+  ```
+- **Dữ liệu bóc tách sẵn cho từng Video trong `data.videos[]`**:
+  - `postId`, `videoId`, `shareUrl`, `caption`, `createTime`, `createdTimeIso`, `durationMs`
+  - `mp4Url`: Link tải trực tiếp file `.mp4` gốc từ CDN Shopee (**không dính logo/watermark**)
+  - `coverUrl`: Ảnh bìa HD của video
+  - `views`, `likes`, `comments`, `shares`
+  - `attachedProducts[]`: Danh sách sản phẩm đang gắn trong giỏ hàng vàng của video đó (`shopId`, `itemId`, `name`, `productUrl`) để hệ thống Affiliate sao chép gắn giỏ ngay lập tức!
+  - *(Lưu ý: Endpoint `/api/v2/timeline/me` của Shopee Video yêu cầu truyền `cookie` tài khoản Shopee bất kỳ đang đăng nhập để xem toàn bộ danh sách video kênh).*
 
 ---
 

@@ -32,6 +32,25 @@ async function main() {
   console.log("3. Tên sản phẩm:", detail.product?.name);
   console.log("   Giá bán (VNĐ):", detail.product?.priceVnd);
   console.log("   Số phân loại :", (detail.product?.models || []).length);
+
+  // [MỚI v1.1.0 - AFFILIATE] Lấy danh sách SP mới nhất của Shop theo thời gian thực
+  const newest = await sdk.getShopNewestProducts({
+    shopId: "1023922469",
+    limit: 10,
+    sinceItemId: "", // Truyền latestItemId lần quét trước để canh SP mới vừa lên kệ
+    country: "VN",
+  });
+  console.log("4. SP mới nhất của Shop -> count:", newest.count, "| latestItemId:", newest.latestItemId);
+
+  // [MỚI v1.1.0 - AFFILIATE] Lấy danh sách Video của Shop (tự động giải mã Shop -> Creator userId)
+  const vids = await sdk.getShopVideos({
+    username: "lovito.vn",
+    limit: 20,
+    maxPages: 1,
+    cookie: "", // Truyền Cookie Shopee còn sống để tải full danh sách video + mp4Url gốc không logo
+    country: "VN",
+  });
+  console.log("5. Kênh Shopee Video Shop -> userId:", vids.userId, "| videos:", vids.count);
 }
 
 main().catch(console.error);

@@ -101,10 +101,12 @@ class MinSignClient {
   removeLocalDevice(accountKey) { return this.invoke("remove_local_device", { accountKey }); }
   signRaw(req) { return this.invoke("sign_raw", req); }
 
-  // Sản phẩm, Shop, Voucher, Tìm kiếm
+  // Sản phẩm, Shop, Voucher, Tìm kiếm & Affiliate Theo Dõi Shop
   getProductDetail(req) { return this.invoke("get_product_detail", req); }
   getShopOverview(req) { return this.invoke("get_shop_overview", req); }
   getShopProducts(req) { return this.invoke("get_shop_products", req); }
+  getShopNewestProducts(req) { return this.invoke("get_shop_newest_products", req); }
+  getShopVideos(req) { return this.invoke("get_shop_videos", req); }
   getShopCategories(req) { return this.invoke("get_shop_categories", req); }
   getShopVouchers(req) { return this.invoke("get_shop_vouchers", req); }
   searchProducts(req) { return this.invoke("search_products", req); }

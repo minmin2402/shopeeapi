@@ -1,12 +1,16 @@
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.1.0)
 
+[![Version](https://img.shields.io/badge/Release-v1.1.0%20(23%20APIs)-8B5CF6?style=for-the-badge)](https://github.com/minmin2402/shopeeapi/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64%20(C--ABI%20DLL)-2563EB?style=for-the-badge)](#)
 [![Shopee Regions](https://img.shields.io/badge/Regions-VN%20%7C%20TW%20%7C%20PH%20%7C%20MY%20%7C%20TH%20%7C%20ID%20%7C%20SG%20%7C%20BR-EE4D2D?style=for-the-badge)](#)
 [![Languages](https://img.shields.io/badge/Wrappers-C%23%20%7C%20Python%20%7C%20Node.js%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Delphi-10B981?style=for-the-badge)](#)
 [![Cloud Signer](https://img.shields.io/badge/Get%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**Bộ thư viện nhân gốc đa ngôn ngữ (`minsign_sdk.dll` — Chuẩn C-ABI quốc tế)** giúp lập trình viên tích hợp toàn bộ nghiệp vụ Shopee tốc độ cao vào bất kỳ phần mềm nào (`C# .NET`, `Python`, `Node.js / Electron`, `C/C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`...) chỉ với **1 file DLL duy nhất**:
+**Bộ thư viện nhân gốc đa ngôn ngữ (`minsign_sdk.dll` — Chuẩn C-ABI quốc tế)** giúp lập trình viên tích hợp toàn bộ nghiệp vụ Shopee & Shopee Affiliate tốc độ cao vào bất kỳ phần mềm nào (`C# .NET`, `Python`, `Node.js / Electron`, `C/C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`...) chỉ với **1 file DLL duy nhất**:
 
+- **[MỚI v1.1.0 — Chuyên Dụng Cho Hệ Thống Affiliate]:**
+  - **API Lấy Sản Phẩm Mới Nhất Của Shop Theo Thời Gian Thực (`GetShopNewestProducts`)** — Canh hàng vừa lên kệ của bất kỳ Shop nào (`rcmd_items?sort_type=2` + `affiliate/offer` kèm hoa hồng + Zero-Cookie Index), tích hợp sẵn bộ lọc `sinceItemId`, `sinceTimestamp`, `withinHours` để chạy Bot săn SP mới tự động!
+  - **API Lấy Danh Sách Video Của Shop (`GetShopVideos`)** — Tự động giải mã `shopUrl` / `shopId` / `username` sang kênh Shopee Video `userId`, lật nhiều trang liên tiếp (`maxPages`), trả sẵn link tải `.mp4` gốc **không watermark** (`mp4Url`) và danh sách sản phẩm gắn giỏ vàng (`attachedProducts[]`)!
 - **Lấy Chi Tiết Sản Phẩm, Gian Hàng, Mã Giảm Giá (Voucher), Tìm Kiếm SEO & Cây Danh Mục (8 Quốc gia Shopee)** — Hoạt động mượt mà ngay cả khi **không truyền Cookie**!
 - **Đăng Shopee Video Thuần API (Pure-API Upload Pipeline 4 Bước)** — Tự động gắn tối đa **6 sản phẩm giỏ hàng Affiliate**, hỗ trợ cả chế độ thường & Duet, kèm hàm đổi mới vân tay nhị phân `.mp4` (`MD5`/`SHA-256`) trong `< 10ms` không cần FFmpeg.
 - **Đẩy Lượt Xem Shopee Video Đa Luồng (`BuffVideoView` & `BuffVideoBatch`)** — Tích hợp sẵn Goroutine Worker Pool tốc độ cao ngay trong nhân DLL, tự động xoay vòng danh sách Proxy & giả lập trọn vẹn luồng đọc byte MP4 + sự kiện `c-api-bit`.
@@ -51,7 +55,7 @@ shopeeapi/
 │   ├── quickstart_nodejs.js           # Code mẫu chạy ngay bằng Node.js
 │   ├── QuickstartCSharp.cs            # Code mẫu tích hợp C# / WinForms / WPF
 │   └── quickstart_cpp.cpp             # Code mẫu tích hợp C++17
-├── DOCS_MINSIGN_NATIVE_SDK.md         # Tài liệu kỹ thuật chi tiết toàn bộ 21 hàm SDK
+├── DOCS_MINSIGN_NATIVE_SDK.md         # Tài liệu kỹ thuật chi tiết toàn bộ 23 hàm SDK
 └── README.md
 ```
 
@@ -83,11 +87,30 @@ print("Tên SP:", detail["product"]["name"])
 print("Giá bán:", detail["product"]["priceVnd"], "VNĐ | Đã bán:", detail["product"]["historicalSold"])
 print("Số phân loại (models):", len(detail["product"]["models"]))
 
-# 2. Quét thông tin gian hàng đa quốc gia (VN, TW, PH, MY, TH, ID, SG, BR)
-shop_tw = sdk.get_shop_overview(shop_id="116309859", country="TW")
-print("Shop Đài Loan:", shop_tw["shop"]["shopName"])
+# 2. [MỚI v1.1.0 - AFFILIATE] Canh sản phẩm MỚI NHẤT vừa lên kệ của Shop theo thời gian thực
+newest = sdk.get_shop_newest_products(
+    username="lovito.vn",
+    limit=20,
+    since_item_id="",  # Truyền latestItemId lần quét trước để chỉ nhận SP mới vừa đăng!
+    cookie="",         # Khuyên truyền Cookie nick phụ + Proxy để mở full tab Mới Nhất (sort_type=2) & hoa hồng
+    proxy="",
+    country="VN",
+)
+print("SP mới nhất:", newest["latestItemId"], "| Số SP mới:", newest["count"])
 
-# 3. Đẩy View Shopee Video đa luồng qua danh sách Proxy riêng
+# 3. [MỚI v1.1.0 - AFFILIATE] Quét danh sách Video của Shop (link MP4 gốc không logo + SP gắn giỏ vàng)
+shop_videos = sdk.get_shop_videos(
+    username="lovito.vn",
+    limit=20,
+    max_pages=2,
+    cookie="SPC_U=...; SPC_ST=...;",  # Cần Cookie Shopee còn sống để đọc full timeline kênh Video
+    proxy="",
+    country="VN",
+)
+for v in shop_videos["videos"]:
+    print("Video:", v["postId"], "| MP4 không logo:", v["mp4Url"], "| SP gắn giỏ:", len(v["attachedProducts"]))
+
+# 4. Đẩy View Shopee Video đa luồng qua danh sách Proxy riêng
 batch = sdk.buff_video_batch(
     video_url="https://sv.shopee.vn/share-video/c4PVehg9CgChmFCrAwAAAA%3D%3D",
     target_views=20,
@@ -168,7 +191,7 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 
 ---
 
-## Bảng Tổng Hợp 21 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll`
+## Bảng Tổng Hợp 23 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll` (`v1.1.0`)
 
 | Nhóm Chức Năng | Tên `action` (`MinSign_Invoke`) | Mô Tả Ngắn | Cần Cookie? |
 |---|---|---|---|
@@ -178,9 +201,10 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `list_local_devices` | Xem danh sách toàn bộ cặp `Tài khoản <-> Điện thoại Android` đang lưu trên máy Client | Không |
 | | `remove_local_device` | Xóa thiết bị đã lưu của 1 tài khoản để cấp máy mới | Không |
 | | `sign_raw` | Chỉ lấy bộ Header chữ ký bảo mật (`x-sap-ri`, `af-ac-enc-dat`, chữ ký động...) | Tuỳ chọn |
-| **2. Sản Phẩm & Gian Hàng (8 Nước)** | `get_product_detail` | Lấy trọn bộ chi tiết SP: tên, giá, tồn kho, đã bán, sao, `models` phân loại, ảnh HD, thông tin Shop | **Không cần** (hoặc kèm Cookie) |
-| | `get_shop_overview` | Lấy thông tin gian hàng từ link shop, `shopId` hoặc `username` (hỗ trợ cả VN, TW, PH, MY, TH, ID, SG, BR) | **Không cần** |
+| **2. Sản Phẩm, Gian Hàng & Affiliate Theo Dõi Shop** | `get_product_detail` | Lấy trọn bộ chi tiết SP: tên, giá, tồn kho, đã bán, sao, `models` phân loại, ảnh HD, thông tin Shop | **Không cần** (hoặc kèm Cookie) |
+| | `get_shop_overview` | Lấy thông tin gian hàng từ link shop, `shopId` hoặc `username` (kèm `userId` kênh Video, hỗ trợ 8 nước) | **Không cần** |
 | | `get_shop_products` | Lấy danh sách sản phẩm trong gian hàng có phân trang (`limit`, `offset`) | **Không cần** |
+| | **`get_shop_newest_products`** | **[MỚI v1.1 — Affiliate]** Lấy SP mới nhất vừa lên kệ của Shop theo thời gian thực (`sinceItemId`, `sinceTimestamp`, `withinHours`, kèm `affiliateProductTag` & hoa hồng) | **Không cần** (khuyên kèm Cookie để mở full `sort_type=2`) |
 | | `get_shop_categories` | Lấy danh mục con nội bộ của gian hàng | **Không cần** |
 | | `get_shop_vouchers` | Quét danh sách mã giảm giá / Voucher đang mở của gian hàng | **Không cần** |
 | | `search_products` | Tìm kiếm sản phẩm theo từ khóa (`relevancy`, `sales`, `ctime`, `price`) | Tuỳ chọn |
@@ -189,9 +213,10 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `precheck_video_upload` | Kiểm tra nhanh Cookie còn sống và có quyền đăng Shopee Video không | **Bắt buộc** |
 | | `get_affiliate_products` | Lấy danh sách sản phẩm gợi ý gắn giỏ hàng Affiliate | **Bắt buộc** |
 | | `mutate_mp4_fingerprint` | Biến đổi nhị phân `.mp4` làm mới `MD5` & `SHA-256` trong `< 10ms` chống quét trùng video | Không |
-| **4. Buff View & Kênh Video** | `buff_video_view` | Đẩy 1 lượt xem Shopee Video hợp lệ chuẩn 4 bước qua Proxy | Không (hoặc kèm Cookie) |
+| **4. Buff View & Kênh Video Shop** | `buff_video_view` | Đẩy 1 lượt xem Shopee Video hợp lệ chuẩn 4 bước qua Proxy | Không (hoặc kèm Cookie) |
 | | `buff_video_batch` | Chạy Worker Pool đa luồng trong DLL đẩy hàng loạt lượt xem xoay vòng `proxies[]` & `cookies[]` | Không (hoặc kèm Cookie) |
 | | `get_video_detail` | Lấy thống kê chi tiết 1 video Shopee (lượt xem, tim, bình luận, `mp4Url`) | Tuỳ chọn |
+| | **`get_shop_videos`** | **[MỚI v1.1 — Affiliate]** Quét toàn bộ danh sách Video của Shop (tự động giải mã `Shop -> userId`, hỗ trợ lật nhiều trang `maxPages`, trả `mp4Url` gốc không logo & `attachedProducts[]`) | Khuyên truyền Cookie nick phụ |
 | | `get_channel_and_hashtag_videos` | Quét danh sách video theo Kênh người dùng hoặc theo Hashtag | Tuỳ chọn |
 | **5. Giỏ Hàng & Mở Rộng** | `add_to_cart` | Tự động ký POST thêm sản phẩm / phân loại (`modelId`) vào giỏ hàng | **Bắt buộc** |
 | | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |

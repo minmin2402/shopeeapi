@@ -46,6 +46,16 @@ def main() -> None:
     tw_shop = sdk.get_shop_overview(shop_id="116309859", country="TW")
     print("\n4. Hồ sơ Shop Đài Loan (TW):", tw_shop.get("shop", {}).get("shopName"))
 
+    # [MỚI v1.1.0 - AFFILIATE] Lấy sản phẩm mới nhất vừa lên kệ của Shop theo thời gian thực
+    newest = sdk.get_shop_newest_products(shop_id="1023922469", limit=10, country="VN")
+    print(f"\n5. SP mới nhất của Shop ({newest.get('count')} SP | latestItemId={newest.get('latestItemId')}):")
+    for it in (newest.get("items") or [])[:3]:
+        print("   *", it.get("itemId"), "|", it.get("name"), "|", f"{it.get('priceVnd', 0):,} VNĐ")
+
+    # [MỚI v1.1.0 - AFFILIATE] Lấy danh sách Video của Shop (truyền kèm Cookie nick phụ để mở khóa full timeline SV)
+    shop_vids = sdk.get_shop_videos(username="lovito.vn", limit=20, cookie="", country="VN")
+    print(f"\n6. Kênh Video của Shop lovito.vn -> Creator userId={shop_vids.get('userId')} | Video quét được={shop_vids.get('count')}")
+
 
 if __name__ == "__main__":
     main()

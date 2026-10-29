@@ -65,6 +65,8 @@ public:
     std::string getProductDetail(const std::string& reqJson) const { return invoke("get_product_detail", reqJson); }
     std::string getShopOverview(const std::string& reqJson) const { return invoke("get_shop_overview", reqJson); }
     std::string getShopProducts(const std::string& reqJson) const { return invoke("get_shop_products", reqJson); }
+    std::string getShopNewestProducts(const std::string& reqJson) const { return invoke("get_shop_newest_products", reqJson); }
+    std::string getShopVideos(const std::string& reqJson) const { return invoke("get_shop_videos", reqJson); }
     std::string getShopVouchers(const std::string& reqJson) const { return invoke("get_shop_vouchers", reqJson); }
     std::string searchProducts(const std::string& reqJson) const { return invoke("search_products", reqJson); }
     std::string uploadShopeeVideo(const std::string& reqJson) const { return invoke("upload_shopee_video", reqJson); }

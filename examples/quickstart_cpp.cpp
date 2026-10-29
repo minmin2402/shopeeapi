@@ -21,7 +21,21 @@ int main() {
             "productUrl": "https://shopee.vn/V%E1%BB%A3t-pickleball-Perseus-4-b%E1%BB%81-m%E1%BA%B7t-carbon-(NFC)-i.1023922469.25294038727",
             "country": "VN"
         })");
-        std::cout << "Product Detail JSON:\n" << productJson << std::endl;
+        std::cout << "Product Detail JSON:\n" << productJson << "\n\n";
+
+        std::string newestJson = sdk.getShopNewestProducts(R"({
+            "shopId": "1023922469",
+            "limit": 5,
+            "country": "VN"
+        })");
+        std::cout << "Shop Newest Products JSON:\n" << newestJson << "\n\n";
+
+        std::string shopVideosJson = sdk.getShopVideos(R"({
+            "username": "lovito.vn",
+            "limit": 10,
+            "country": "VN"
+        })");
+        std::cout << "Shop Videos JSON:\n" << shopVideosJson << std::endl;
     } catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;
         return 1;
