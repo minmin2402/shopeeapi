@@ -52,6 +52,7 @@ shopeeapi/
 │       └── minsign_sdk_client.hpp     # C++17 Header-only Wrapper (RAII tự giải phóng vùng nhớ)
 ├── examples/
 │   ├── quickstart_python.py           # Code mẫu chạy ngay bằng Python
+│   ├── buff_view_shopee_video.py      # Ví dụ chuyên sâu: Buff View đơn luồng & đa luồng xoay Proxy
 │   ├── quickstart_nodejs.js           # Code mẫu chạy ngay bằng Node.js
 │   ├── QuickstartCSharp.cs            # Code mẫu tích hợp C# / WinForms / WPF
 │   └── quickstart_cpp.cpp             # Code mẫu tích hợp C++17
@@ -220,6 +221,148 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `get_channel_and_hashtag_videos` | Quét danh sách video theo Kênh người dùng hoặc theo Hashtag | Tuỳ chọn |
 | **5. Giỏ Hàng & Mở Rộng** | `add_to_cart` | Tự động ký POST thêm sản phẩm / phân loại (`modelId`) vào giỏ hàng | **Bắt buộc** |
 | | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |
+
+---
+
+## Hướng Dẫn Chi Tiết Cách Buff View Shopee Video Bằng SDK (Tham Số & Nguồn Lấy)
+
+SDK tích hợp sẵn trọn vẹn quy trình 4 bước chuẩn của Shopee Video bên trong nhân `minsign_sdk.dll` (*Giải link rút gọn `shp.ee` $\rightarrow$ Ký mở `timeline/single` lấy `view_token` $\rightarrow$ Đọc luồng byte MP4 `Range: 0-65535` trên CDN $\rightarrow$ Ký bắn gói 3 sự kiện `video_impression` + `video_play` + `video_play_time` lên `c-api-bit`*).
+
+> **Chi phí lượt ký:** Đúng **2 lượt ký / 1 View hoàn chỉnh** (bước đọc CDN MP4 tốn 0 lượt ký). Bộ đếm View hiển thị trên App Shopee cập nhật sau khoảng **30 giây – 2 phút**.
+
+### 1. Chọn Hàm Phù Hợp Với Tool Của Bạn
+- **`buff_video_batch` (`BuffVideoBatch` / `buffVideoBatch`)**: Khuyên dùng! Tự chạy **Goroutine Worker Pool đa luồng ngay trong DLL** (tối đa `200` luồng), tự chia việc và xoay vòng mảng `proxies[]` + `cookies[]`.
+- **`buff_video_view` (`BuffVideoView` / `buffVideoView`)**: Đẩy **1 lượt xem đơn lẻ** (dùng khi bạn muốn tự viết vòng lặp quản lý luồng riêng để cập nhật từng dòng trạng thái lên bảng giao diện WinForms / WPF / Electron).
+- **`get_video_detail` (`GetVideoDetail` / `getVideoDetail`)**: Kiểm tra số `views`, `likes`, `comments`, `authorName` hiện tại của video trước và sau khi chạy.
+
+### 2. Bảng Giải Thích Chi Tiết Các Tham Số Truyền Vào & Lấy Ở Đâu?
+
+| Tham Số (JSON / C# / JS) | Tên Tham Số Python | Bắt Buộc? | Ý Nghĩa & Cách Lấy Thực Tế |
+|---|---|---|---|
+| **`apiKey`** | `api_key` *(lúc tạo `MinSignClient`)* | **Bắt buộc** | Mã xác thực máy chủ ký. Đăng nhập **[vip-sign.minmintool.site/dashboard](https://vip-sign.minmintool.site/dashboard)** $\rightarrow$ mục **Quản Lý API Key** $\rightarrow$ bấm **Sao Chép Key**. |
+| **`videoUrl`** | `video_url` | **Bắt buộc** *(nếu trống `postId`)* | Link video cần đẩy view. Mở video trên **App Shopee** $\rightarrow$ bấm nút **Chia sẻ (Share)** $\rightarrow$ **Sao chép liên kết**. Nhận mọi dạng link: rút gọn `https://vn.shp.ee/...`, link đầy đủ `https://sv.shopee.vn/share-video/...`, hoặc lấy từ trường `shareUrl` của hàm `get_shop_videos`. |
+| **`postId`** | `post_id` | Tuỳ chọn (`""`) | Mã ID gốc của bài đăng video (VD: `"c4PVehg9CgChmFCrAwAAAA=="`). Nếu đã truyền `videoUrl` thì **để trống `""`** (SDK tự tách). Nếu quét từ `get_shop_videos`, truyền thẳng `postId` sẽ bỏ qua bước giải nén link rút gọn (nhanh hơn ~150ms). |
+| **`targetViews`** | `target_views` | Chỉ ở `buff_video_batch` | Tổng số lượt xem cần đẩy trong đợt gọi này (mặc định `10`, ví dụ truyền `100`, `500`, `1000`). |
+| **`concurrency`** | `concurrency` | Chỉ ở `buff_video_batch` | Số luồng chạy song song cùng lúc bên trong DLL (mặc định `5`, tối đa `200`). **Mẹo:** Đặt nhỏ hơn hoặc bằng tổng số Proxy xoay đang có. |
+| **`proxy`** / **`proxies`** | `proxy` *(chuỗi)* / `proxies` *(mảng)* | **Rất quan trọng khi chạy SLL** | Shopee chống spam nhiều view từ cùng 1 địa chỉ IP. Nếu test 1–2 view trên máy cá nhân có thể để trống `""` / `[]`. Khi chạy số lượng lớn, mua Proxy xoay IPv4 Dân cư / 4G (TMProxy, WWProxy, Tinsoft, ZingProxy, LunaProxy...) và truyền vào. **SDK tự nhận mọi định dạng:** `"ip:port:user:pass"`, `"ip:port"`, `"http://user:pass@ip:port"`, `"socks5://user:pass@ip:port"`. |
+| **`cookie`** / **`cookies`** | `cookie` *(chuỗi)* / `cookies` *(mảng)* | **Không bắt buộc** (`""` / `[]`) | **Để trống `""` / `[]` (Khuyên dùng mặc định):** SDK chạy chế độ *Guest Vãng Lai* — mỗi lượt xem tự sinh mới 1 điện thoại Android 14 + mã `SPC_F` riêng biệt, không cần nuôi nick Shopee! Nếu có sẵn dàn Cookie nick phụ (`"SPC_U=...; SPC_ST=...;"`), truyền vào sẽ tính là view người dùng đã đăng nhập và tự khóa thiết bị cố định vào `devices_vault.json`. |
+| **`watchSeconds`** | `watch_seconds` | Tuỳ chọn (`18`) | Số giây xem video báo cáo lên Shopee (`seg_duration`). Khuyên đặt từ `15` đến `25` giây để đạt độ giữ chân (Retention) tự nhiên. |
+| **`simulateWait`** | *(qua `invoke`)* | Tuỳ chọn (`false`) | Chỉ có ở `buff_video_view`: đặt `true` nếu muốn luồng nghỉ thực tế ~3 giây giữa bước mở video và bước báo cáo xem xong. |
+| **`country`** | `country` | Tuỳ chọn (`"VN"`) | Mã vùng Shopee (`"VN"`, `"TW"`, `"PH"`, `"MY"`, `"TH"`, `"ID"`, `"SG"`, `"BR"`). Nếu truyền `videoUrl` đầy đủ SDK tự động nhận diện vùng. |
+
+### 3. Ví Dụ Đầy Đủ Cách Gọi Buff View Ở Các Ngôn Ngữ
+
+#### Python (`examples/buff_view_shopee_video.py`)
+```python
+from wrappers.python.minsign_sdk import MinSignClient
+
+sdk = MinSignClient(api_key="YOUR_X_API_KEY_HERE", default_country="VN")
+
+# Danh sách Proxy xoay (để [] nếu test thử 1-2 lượt bằng mạng hiện tại)
+proxies = [
+    "103.145.22.11:8080:user1:pass1",
+    "103.145.22.12:8080:user2:pass2",
+]
+
+# Cách A: Đẩy Batch 100 View với 10 luồng song song tự xoay Proxy ngay trong DLL
+batch_res = sdk.buff_video_batch(
+    video_url="https://vn.shp.ee/xxxxxx",  # Hoặc link https://sv.shopee.vn/share-video/...
+    target_views=100,
+    concurrency=10,
+    proxies=proxies,
+    cookies=[],        # Để rỗng [] = tự giả lập khách vãng lai (Guest) với máy Android mới mỗi lượt
+    watch_seconds=20,
+    country="VN",
+)
+print(f"Thành công: {batch_res['successViews']}/{batch_res['targetViews']} | Thời gian: {batch_res['elapsedMs']}ms")
+
+# Cách B: Đẩy lẻ 1 View (khi muốn tự quản lý vòng lặp / hiển thị log từng dòng lên UI)
+single_res = sdk.buff_video_view(
+    video_url="https://vn.shp.ee/xxxxxx",
+    proxy=proxies[0],
+    watch_seconds=18,
+    country="VN",
+)
+print("1 View OK:", single_res["success"], "| UBT HTTP:", single_res["ubtHttpStatus"])
+```
+
+#### C# (.NET / WinForms / WPF)
+```csharp
+using System;
+using MinSign;
+
+using var sdk = new MinSignClient(apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN");
+
+var batch = sdk.BuffVideoBatch(new
+{
+    videoUrl = "https://vn.shp.ee/xxxxxx",
+    targetViews = 100,
+    concurrency = 10,
+    proxies = new[]
+    {
+        "103.145.22.11:8080:user1:pass1",
+        "103.145.22.12:8080:user2:pass2"
+    },
+    cookies = Array.Empty<string>(), // Không cần Cookie
+    watchSeconds = 20,
+    country = "VN"
+});
+
+var data = batch.GetProperty("data");
+Console.WriteLine($"Đã đẩy thành công: {data.GetProperty("successViews")}/{data.GetProperty("targetViews")} views!");
+```
+
+#### Node.js / Electron (`npm install koffi`)
+```javascript
+const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
+
+(async () => {
+  const sdk = new MinSignClient({ apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN" });
+
+  // Chạy bất đồng bộ trên Worker Thread — không bao giờ làm đơ giao diện Electron!
+  const batch = await sdk.buffVideoBatch({
+    videoUrl: "https://vn.shp.ee/xxxxxx",
+    targetViews: 100,
+    concurrency: 10,
+    proxies: ["103.145.22.11:8080:user1:pass1", "103.145.22.12:8080:user2:pass2"],
+    cookies: [],
+    watchSeconds: 20,
+    country: "VN",
+  });
+  console.log("Kết quả Batch:", batch.successViews, "/", batch.targetViews);
+})();
+```
+
+### 4. Cấu Trúc Dữ Liệu JSON Trả Về Của Hàm Buff View
+- **`buff_video_view` (`data`)**:
+  ```json
+  {
+    "success": true,
+    "country": "VN",
+    "postId": "c4PVehg9CgChmFCrAwAAAA==",
+    "videoId": "vn-11110105-6ke17-m1...",
+    "authorName": "ten_kenh_video",
+    "currentViews": 1250,
+    "vodStreamStatus": 206,
+    "vodBytesRead": 65536,
+    "ubtHttpStatus": 200,
+    "totalLatencyMs": 840
+  }
+  ```
+- **`buff_video_batch` (`data`)**:
+  ```json
+  {
+    "country": "VN",
+    "postId": "c4PVehg9CgChmFCrAwAAAA==",
+    "targetViews": 100,
+    "concurrency": 10,
+    "successViews": 98,
+    "failedViews": 2,
+    "reportedViews": 1348,
+    "lastError": "",
+    "elapsedMs": 9420
+  }
+  ```
 
 ---
 

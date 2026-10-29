@@ -154,6 +154,40 @@ Chỉ cần truyền `shopUrl`, `shopId` hoặc `username` của Shop — SDK s�
 
 ---
 
+## 4.2. Chuyên Đề Tích Hợp Buff View Shopee Video Bằng SDK (Tham Số & Nguồn Lấy Chi Tiết)
+
+Khi gọi `buff_video_view` hoặc `buff_video_batch`, nhân `minsign_sdk.dll` tự động xử lý trọn gói 4 bước chuẩn nội bộ của Shopee Video:
+1. Tự động giải nén link rút gọn `https://vn.shp.ee/...` (nếu có) sang mã `post_id` gốc.
+2. Xin chữ ký & mở `GET sv.<domain>/api/v2/timeline/single` qua Proxy để trích xuất `view_token`, `videoId`, `mp4Url`, `durationMs` (**1 lượt ký**).
+3. Đọc luồng byte thật của file video MP4 trên CDN (`Range: bytes=0-65535` $\rightarrow$ `HTTP 206`, **0 lượt ký**).
+4. Đóng gói mảng 3 sự kiện `video_impression` + `video_play` + `video_play_time` kèm `view_token` & `seg_duration`, xin chữ ký POST và bắn lên `c-api-bit.shopeemobile.com/v4/tr/<region>` qua cùng Proxy (**1 lượt ký**).
+
+### A. Bảng Tra Cứu Toàn Bộ Tham Số Đầu Vào & Cách Lấy
+
+| Tên Tham Số JSON (`MinSign_Invoke` / C# / Node) | Tên Tham Số Python (`minsign_sdk.py`) | Kiểu & Mặc Định | Giải Thích & Nguồn Lấy Thực Tế |
+|---|---|---|---|
+| `apiKey` | `api_key` *(khởi tạo `MinSignClient`)* | `string` *(Bắt buộc)* | Mã `X-API-Key` lấy tại mục **Quản Lý API Key** trên `https://vip-sign.minmintool.site/dashboard`. |
+| `videoUrl` | `video_url` | `string` *(Bắt buộc nếu không có `postId`)* | Link bài đăng Shopee Video: Mở App Shopee $\rightarrow$ bấm nút **Chia sẻ (Share)** trên video $\rightarrow$ chọn **Sao chép liên kết**. Nhận cả link rút gọn (`https://vn.shp.ee/...`), link đầy đủ (`https://sv.shopee.vn/share-video/...`) hoặc trường `shareUrl` trả về từ hàm `get_shop_videos`. |
+| `postId` | `post_id` | `string` (`""`) | Mã định danh bài đăng Base64 (VD: `"c4PVehg9CgChmFCrAwAAAA=="`). Nếu đã truyền `videoUrl` thì để trống `""`. Nếu lấy từ danh sách `get_shop_videos`, truyền thẳng `postId` giúp tiết kiệm 1 request giải nén link rút gọn. |
+| `targetViews` | `target_views` | `int` (`10`) | *(Chỉ dùng cho `buff_video_batch`)* Tổng số lượt xem mục tiêu cần đẩy. |
+| `concurrency` | `concurrency` | `int` (`5`, max `200`) | *(Chỉ dùng cho `buff_video_batch`)* Số luồng Goroutine chạy đồng thời bên trong DLL. Nên đặt $\le$ số lượng Proxy xoay trong mảng `proxies`. |
+| `proxy` / `proxies` | `proxy` / `proxies` | `string` / `string[]` | Proxy xoay IPv4 Dân cư hoặc 4G (mua tại TMProxy, WWProxy, Tinsoft, ZingProxy, LunaProxy...) để mỗi lượt xem mang 1 IP thật khác nhau. Test lẻ 1–2 lượt trên máy có thể truyền `""` / `[]`. Hỗ trợ mọi định dạng: `"ip:port:user:pass"`, `"ip:port"`, `"http://user:pass@ip:port"`, `"socks5://user:pass@ip:port"`. |
+| `cookie` / `cookies` | `cookie` / `cookies` | `string` / `string[]` | **Không bắt buộc!** Để trống `""` / `[]` SDK sẽ chạy chế độ **Guest Vãng Lai** (mỗi view tự cấp 1 máy Android 14 + `SPC_F` mới tinh, không cần nuôi nick Shopee). Nếu truyền Cookie nick phụ (`"SPC_U=...; SPC_ST=...;"`), lượt xem tính là người dùng đã đăng nhập và giữ cố định thiết bị theo nick trong `devices_vault.json`. |
+| `watchSeconds` | `watch_seconds` | `int` (`18`) | Số giây xem video báo cáo trong sự kiện `video_play_time` (`seg_duration`). Khuyên để `15` – `25` giây. |
+| `simulateWait` | *(truyền qua `invoke`)* | `bool` (`false`) | *(Chỉ dùng cho `buff_video_view`)* Nếu `true`, luồng nghỉ chờ ~3 giây trước khi bắn sự kiện kết thúc lượt xem. |
+| `country` | `country` | `string` (`"VN"`) | Mã quốc gia (`"VN"`, `"TW"`, `"PH"`, `"MY"`, `"TH"`, `"ID"`, `"SG"`, `"BR"`). Tự động nhận diện nếu truyền `videoUrl` đầy đủ. |
+
+### B. Cấu Trúc Kết Quả Trả Về (`data`)
+- **Kết quả của `buff_video_view` (1 lượt xem đơn lẻ):**
+  - `success` (`bool`): `true` khi `c-api-bit` xác nhận `HTTP 200`.
+  - `postId`, `videoId`, `authorName`, `caption`, `currentViews`, `likes`.
+  - `vodStreamStatus` (`int`, chuẩn là `206`), `vodBytesRead` (`65536`), `ubtHttpStatus` (`200`), `totalLatencyMs`.
+- **Kết quả của `buff_video_batch` (Đa luồng hàng loạt):**
+  - `targetViews`, `concurrency`, `successViews`, `failedViews`, `reportedViews`, `lastError`, `elapsedMs`.
+  - *(Lưu ý: Bộ đếm View công khai của Shopee có độ trễ cache khoảng **30 giây – 2 phút** sau khi đẩy thành công).*
+
+---
+
 ## 5. Ví Dụ Tích Hợp Thực Tế Cho Từng Ngôn Ngữ
 
 ### 5.1. Tích hợp với C# (.NET Framework / .NET 6 / .NET 8 / WinForms / WPF)
