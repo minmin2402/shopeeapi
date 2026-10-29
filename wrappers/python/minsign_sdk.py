@@ -244,13 +244,56 @@ class MinSignClient:
         return self.invoke("mutate_mp4_fingerprint", {"inputPath": input_path, "outputPath": output_path, "inPlace": in_place})["data"]
 
     # --- Nhóm 4: Buff View Shopee Video & Kênh Video ---
-    def buff_video_view(self, video_url: str = "", post_id: str = "", proxy: str = "", cookie: str = "", watch_seconds: int = 18, country: str = "VN") -> Dict[str, Any]:
-        return self.invoke("buff_video_view", {"videoUrl": video_url, "postId": post_id, "proxy": proxy, "cookie": cookie, "watchSeconds": watch_seconds, "country": country})["data"]
+    def buff_video_view(
+        self,
+        video_url: str = "",
+        post_id: str = "",
+        proxy: str = "",
+        cookie: str = "",
+        watch_seconds: int = 18,
+        country: str = "VN",
+        account_id: str = "",
+        device_id: str = "",
+        simulate_wait: bool = False,
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "buff_video_view",
+            {
+                "videoUrl": video_url,
+                "postId": post_id,
+                "proxy": proxy,
+                "cookie": cookie,
+                "watchSeconds": watch_seconds,
+                "country": country,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "simulateWait": simulate_wait,
+            },
+        )["data"]
 
-    def buff_video_batch(self, video_url: str, target_views: int = 10, concurrency: int = 5, proxies: Optional[List[str]] = None, cookies: Optional[List[str]] = None, watch_seconds: int = 18, country: str = "VN") -> Dict[str, Any]:
+    def buff_video_batch(
+        self,
+        video_url: str = "",
+        target_views: int = 10,
+        concurrency: int = 5,
+        proxies: Optional[List[str]] = None,
+        cookies: Optional[List[str]] = None,
+        watch_seconds: int = 18,
+        country: str = "VN",
+        post_id: str = "",
+    ) -> Dict[str, Any]:
         return self.invoke(
             "buff_video_batch",
-            {"videoUrl": video_url, "targetViews": target_views, "concurrency": concurrency, "proxies": proxies or [], "cookies": cookies or [], "watchSeconds": watch_seconds, "country": country},
+            {
+                "videoUrl": video_url,
+                "postId": post_id,
+                "targetViews": target_views,
+                "concurrency": concurrency,
+                "proxies": proxies or [],
+                "cookies": cookies or [],
+                "watchSeconds": watch_seconds,
+                "country": country,
+            },
         )["data"]
 
     def get_video_detail(self, video_url: str = "", post_id: str = "", proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:

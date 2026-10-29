@@ -243,13 +243,25 @@ class Program
         });
         Console.WriteLine("Kết quả đăng Video: " + uploadRes.GetRawText());
 
-        // 5. Đẩy View Shopee Video đa luồng (Goroutine Worker Pool ngay trong DLL)
+        // 5. Đẩy View Shopee Video:
+        // - Đẩy lẻ 1 view (BuffVideoView): truyền cookie = videoCookie (chuỗi đơn, hoặc "" nếu chạy Guest)
+        // - Đẩy đa luồng (BuffVideoBatch): truyền cookies = new[] { ... } (mảng Cookie xoay vòng, hoặc Array.Empty<string>() nếu chạy Guest)
+        JsonElement singleView = sdk.BuffVideoView(new
+        {
+            videoUrl = "https://vn.shp.ee/xxxxxx",
+            proxy = "103.145.22.11:8080:user:pass",
+            cookie = videoCookie, // Truyền Cookie nick Shopee (hoặc "" nếu đẩy Guest vãng lai)
+            watchSeconds = 18,
+            country = "VN"
+        });
+
         JsonElement batchView = sdk.BuffVideoBatch(new
         {
             videoUrl = "https://vn.shp.ee/xxxxxx",
             targetViews = 50,
             concurrency = 10,
             proxies = new[] { "103.145.22.11:8080:user:pass", "103.145.22.12:8080:user:pass" },
+            cookies = new[] { videoCookie }, // Mảng Cookie các nick Shopee (hoặc Array.Empty<string>() nếu đẩy Guest)
             watchSeconds = 18,
             country = "VN"
         });
@@ -290,14 +302,27 @@ cookie_acc = "SPC_U=15759087777; SPC_ST=...; csrftoken=...;"
 bound = sdk.bind_account_device(cookie=cookie_acc, country="VN")
 print("Thiết bị cố định của Acc:", bound["device"]["deviceId"], bound["device"]["marketingName"])
 
-# 4. Đẩy 1 lượt xem Shopee Video chuẩn 4 bước qua Proxy riêng
+# 4. Đẩy 1 lượt xem lẻ (buff_video_view -> truyền tham số cookie="...")
 view_res = sdk.buff_video_view(
     video_url="https://sv.shopee.vn/share-video/c4PVehg9CgChmFCrAwAAAA%3D%3D",
     proxy="http://user:pass@103.145.22.11:8080",  # Để "" nếu test trực tiếp
+    cookie=cookie_acc,                            # Truyền Cookie nick Shopee (hoặc để "" nếu chạy Guest vãng lai)
     watch_seconds=18,
     country="VN",
 )
 print("Đẩy view thành công:", view_res["success"], "| UBT HTTP:", view_res["ubtHttpStatus"])
+
+# 4b. Đẩy hàng loạt đa luồng (buff_video_batch -> truyền mảng cookies=[...])
+batch_res = sdk.buff_video_batch(
+    video_url="https://sv.shopee.vn/share-video/c4PVehg9CgChmFCrAwAAAA%3D%3D",
+    target_views=50,
+    concurrency=10,
+    proxies=["103.145.22.11:8080:user:pass"],
+    cookies=[cookie_acc],  # Danh sách Cookie các nick tự xoay vòng (hoặc để [] nếu chạy Guest vãng lai)
+    watch_seconds=18,
+    country="VN",
+)
+print("Batch hoàn tất:", batch_res["successViews"], "/", batch_res["targetViews"])
 
 # 5. Đổi mới MD5/SHA256 file MP4 trong 5ms (chống quét trùng video hàng loạt)
 mut = sdk.mutate_mp4_fingerprint("video_goc.mp4", "video_up_nick1.mp4")
@@ -327,12 +352,13 @@ async function main() {
   const shop = await sdk.getShopOverview({ username: "apple_flagship_store", country: "VN" });
   console.log("Gian hàng:", shop.shop.shopName, "| Người theo dõi:", shop.shop.followerCount);
 
-  // Chạy Buff View đa luồng ngay trong nhân DLL
+  // Chạy Buff View đa luồng ngay trong nhân DLL (truyền cookies: [...] hoặc buffVideoView truyền cookie: "...")
   const batch = await sdk.buffVideoBatch({
     postId: "c4PVehg9CgChmFCrAwAAAA==",
     targetViews: 20,
     concurrency: 5,
     proxies: ["http://user:pass@103.145.22.11:8080"],
+    cookies: ["SPC_U=15759087777; SPC_ST=...;"], // Mảng Cookie các nick (hoặc để [] nếu chạy Guest)
     watchSeconds: 18,
     country: "VN",
   });

@@ -111,12 +111,13 @@ shop_videos = sdk.get_shop_videos(
 for v in shop_videos["videos"]:
     print("Video:", v["postId"], "| MP4 không logo:", v["mp4Url"], "| SP gắn giỏ:", len(v["attachedProducts"]))
 
-# 4. Đẩy View Shopee Video đa luồng qua danh sách Proxy riêng
+# 4. Đẩy View Shopee Video đa luồng (buff_video_batch nhận cookies=[...], còn buff_video_view nhận cookie="...")
 batch = sdk.buff_video_batch(
     video_url="https://sv.shopee.vn/share-video/c4PVehg9CgChmFCrAwAAAA%3D%3D",
     target_views=20,
     concurrency=5,
-    proxies=["103.145.22.11:8080:user:pass"],  # Để [] nếu test mạng trực tiếp
+    proxies=["103.145.22.11:8080:user:pass"],        # Để [] nếu test mạng trực tiếp
+    cookies=["SPC_U=15759087777; SPC_ST=...;"],      # Danh sách Cookie xoay vòng (hoặc để [] nếu chạy Guest vãng lai)
     watch_seconds=18,
     country="VN",
 )
@@ -264,22 +265,29 @@ proxies = [
     "103.145.22.12:8080:user2:pass2",
 ]
 
-# Cách A: Đẩy Batch 100 View với 10 luồng song song tự xoay Proxy ngay trong DLL
+# Danh sách Cookie các nick Shopee (tuỳ chọn — để [] nếu muốn chạy Guest vãng lai không cần nick)
+cookies = [
+    "SPC_U=15759087777; SPC_ST=...; csrftoken=...;",
+    "SPC_U=26841029333; SPC_ST=...; csrftoken=...;",
+]
+
+# Cách A: Đẩy Batch 100 View đa luồng -> truyền tham số mảng cookies=[...]
 batch_res = sdk.buff_video_batch(
     video_url="https://vn.shp.ee/xxxxxx",  # Hoặc link https://sv.shopee.vn/share-video/...
     target_views=100,
     concurrency=10,
     proxies=proxies,
-    cookies=[],        # Để rỗng [] = tự giả lập khách vãng lai (Guest) với máy Android mới mỗi lượt
+    cookies=cookies,   # Tự xoay vòng Cookie + giữ thiết bị cố định từng nick (hoặc để [] nếu đẩy Guest)
     watch_seconds=20,
     country="VN",
 )
 print(f"Thành công: {batch_res['successViews']}/{batch_res['targetViews']} | Thời gian: {batch_res['elapsedMs']}ms")
 
-# Cách B: Đẩy lẻ 1 View (khi muốn tự quản lý vòng lặp / hiển thị log từng dòng lên UI)
+# Cách B: Đẩy lẻ 1 View -> truyền tham số chuỗi đơn cookie="..."
 single_res = sdk.buff_video_view(
     video_url="https://vn.shp.ee/xxxxxx",
     proxy=proxies[0],
+    cookie=cookies[0],  # Truyền 1 chuỗi Cookie nick Shopee (hoặc để "" nếu đẩy Guest)
     watch_seconds=18,
     country="VN",
 )
@@ -293,6 +301,7 @@ using MinSign;
 
 using var sdk = new MinSignClient(apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN");
 
+// 1. Đẩy Batch đa luồng -> truyền mảng cookies = new[] { ... }
 var batch = sdk.BuffVideoBatch(new
 {
     videoUrl = "https://vn.shp.ee/xxxxxx",
@@ -303,8 +312,21 @@ var batch = sdk.BuffVideoBatch(new
         "103.145.22.11:8080:user1:pass1",
         "103.145.22.12:8080:user2:pass2"
     },
-    cookies = Array.Empty<string>(), // Không cần Cookie
+    cookies = new[]
+    {
+        "SPC_U=15759087777; SPC_ST=...;", // Hoặc truyền Array.Empty<string>() nếu chạy Guest không cần nick
+    },
     watchSeconds = 20,
+    country = "VN"
+});
+
+// 2. Đẩy lẻ 1 View -> truyền chuỗi đơn cookie = "..."
+var single = sdk.BuffVideoView(new
+{
+    videoUrl = "https://vn.shp.ee/xxxxxx",
+    proxy = "103.145.22.11:8080:user1:pass1",
+    cookie = "SPC_U=15759087777; SPC_ST=...;", // Hoặc "" nếu chạy Guest
+    watchSeconds = 18,
     country = "VN"
 });
 
@@ -319,17 +341,27 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 (async () => {
   const sdk = new MinSignClient({ apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN" });
 
-  // Chạy bất đồng bộ trên Worker Thread — không bao giờ làm đơ giao diện Electron!
+  // 1. Đẩy Batch đa luồng trên Worker Thread -> truyền mảng cookies: [...]
   const batch = await sdk.buffVideoBatch({
     videoUrl: "https://vn.shp.ee/xxxxxx",
     targetViews: 100,
     concurrency: 10,
     proxies: ["103.145.22.11:8080:user1:pass1", "103.145.22.12:8080:user2:pass2"],
-    cookies: [],
+    cookies: ["SPC_U=15759087777; SPC_ST=...;"], // Để [] nếu đẩy Guest vãng lai
     watchSeconds: 20,
     country: "VN",
   });
   console.log("Kết quả Batch:", batch.successViews, "/", batch.targetViews);
+
+  // 2. Đẩy lẻ 1 View -> truyền chuỗi đơn cookie: "..."
+  const single = await sdk.buffVideoView({
+    videoUrl: "https://vn.shp.ee/xxxxxx",
+    proxy: "103.145.22.11:8080:user1:pass1",
+    cookie: "SPC_U=15759087777; SPC_ST=...;", // Để "" nếu đẩy Guest vãng lai
+    watchSeconds: 18,
+    country: "VN",
+  });
+  console.log("1 View OK:", single.success);
 })();
 ```
 
