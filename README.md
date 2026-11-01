@@ -57,11 +57,13 @@ shopeeapi/
 │       └── minsign_sdk_client.hpp     # C++17 Header-only Wrapper (RAII tự giải phóng vùng nhớ)
 ├── examples/
 │   ├── quickstart_python.py           # Code mẫu chạy ngay bằng Python
+│   ├── image_search_shopee.py         # Ví dụ chuyên sâu: Tìm SP bằng Hình ảnh (Tương tự / Giá rẻ hơn) & AI Crop
 │   ├── buff_view_shopee_video.py      # Ví dụ chuyên sâu: Buff View đơn luồng & đa luồng xoay Proxy
 │   ├── quickstart_nodejs.js           # Code mẫu chạy ngay bằng Node.js
 │   ├── QuickstartCSharp.cs            # Code mẫu tích hợp C# / WinForms / WPF
 │   └── quickstart_cpp.cpp             # Code mẫu tích hợp C++17
-├── DOCS_MINSIGN_NATIVE_SDK.md         # Tài liệu kỹ thuật chi tiết toàn bộ 23 hàm SDK
+├── DOCS_TIM_SAN_PHAM_BANG_ANH.md      # Cẩm nang riêng: Tích hợp Tìm kiếm bằng Hình ảnh & AI Crop Vật Thể
+├── DOCS_MINSIGN_NATIVE_SDK.md         # Tài liệu kỹ thuật chi tiết toàn bộ 26 hàm SDK
 └── README.md
 ```
 
@@ -405,7 +407,196 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 
 ---
 
+## Hướng Dẫn Chi Tiết Cách Tìm Sản Phẩm Bằng Hình Ảnh & AI Crop Vật Thể (`v1.3.0+`)
+
+Từ bản **`v1.3.0`**, `minsign_sdk.dll` tích hợp trực tiếp luồng **Tìm kiếm sản phẩm bằng hình ảnh thuần HTTP (`search_products_by_image`)** và **AI nhận diện vùng vật thể (`get_image_bounding_box`)** chuẩn App Shopee — hoàn toàn **không cần trình duyệt, không cần giả lập Android, không dính Captcha**.
+
+> **Chi phí lượt ký cực tiết kiệm:**
+> - Bước **Upload ảnh lên CDN Shopee** (`sv.shopee.vn/api/v2/biz/file/image`): **`0` lượt ký** (tự động chuyển mọi định dạng `.webp` từ 1688/TikTok, `.png` chụp màn hình `Ctrl+V`, `.gif`, `.bmp` sang `JPEG` chuẩn ngay trong RAM).
+> - Bước **AI Nhận diện khung vật thể** (`get_image_bounding_box`): **`0` lượt ký** & **không cần Cookie**.
+> - Bước **Truy vấn kết quả Image Search**: Chỉ tốn đúng **`1` lượt ký / trang (`20` sản phẩm)**.
+
+### 1. Bảng Giải Thích Chi Tiết Các Tham Số Của `search_products_by_image`
+
+Bạn chỉ cần truyền **`cookie`** kèm **1 trong 5 nguồn ảnh đầu vào** (`imagePath`, `imageBase64`, `imageUrl`, `productUrl`, hoặc `imageId`):
+
+| Tham Số (JSON / JS / C#) | Tên Tham Số Python | Bắt Buộc? | Ý Nghĩa & Cách Truyền Thực Tế |
+|---|---|---|---|
+| **`cookie`** | `cookie` | **Bắt buộc** | Chuỗi Cookie tài khoản Shopee còn sống (**bắt buộc có `SPC_ST=...`**; hỗ trợ cả định dạng chuỗi header `"SPC_ST=...; SPC_U=...;"` hoặc mảng JSON cookie xuất từ trình duyệt). |
+| **`imagePath`** | `image_path` | Chọn 1 trong 5 nguồn ảnh | Đường dẫn file ảnh trên máy tính (VD: `"D:/anh_mau_1688.webp"`, `"C:/test.png"`, `"D:/sp.jpg"`). SDK tự động giải mã `WebP/PNG/GIF/BMP` sang `JPEG` chuẩn trên RAM trước khi đẩy lên Shopee. |
+| **`imageBase64`** | `image_base64` | Chọn 1 trong 5 nguồn ảnh | Chuỗi ảnh mã hóa Base64 (nhận cả chuỗi thuần lẫn `data:image/png;base64,iVBOR...` khi người dùng bấm `Ctrl+V` dán ảnh chụp màn hình trực tiếp vào phần mềm!). |
+| **`imageUrl`** | `image_url` | Chọn 1 trong 5 nguồn ảnh | - **Link ảnh ngoài** (*TikTok, 1688, Taobao, Facebook, Web bất kỳ*): SDK tự tải ảnh về RAM $\rightarrow$ đẩy lên CDN Shopee (`0` lượt ký) $\rightarrow$ tìm kiếm.<br>- **Link ảnh CDN Shopee** (`https://down-vn.img.susercontent.com/file/...`): SDK tự bóc mã ảnh tìm thẳng trong **`~700ms` (`0` bước upload)**! |
+| **`productUrl`** | `product_url` | Chọn 1 trong 5 nguồn ảnh | Link sản phẩm Shopee bất kỳ (hoặc truyền cặp `shopId` + `itemId`). SDK tự lấy ảnh bìa sản phẩm đó để quét toàn bộ các Shop khác đang bán mẫu hàng giống hệt hoặc giá rẻ hơn! |
+| **`imageId`** | `image_id` | Chọn 1 trong 5 nguồn ảnh | Mã hash ảnh trên CDN Shopee (VD: `"vn-11134114-81ztc-..."`). Dùng để phân trang trang 2, trang 3 (`offset: 20, 40...`) mà **không cần upload lại ảnh**! |
+| **`resultType`** | `result_type` | Tuỳ chọn (`"SimilarProducts"`) | - `"SimilarProducts"`: Tìm sản phẩm giống nhất về kiểu dáng/mẫu mã.<br>- `"CheaperOptions"`: Tìm các Shop bán mẫu tương tự nhưng **ưu tiên giá rẻ hơn** (cực mạnh để so giá nguồn hàng / Affiliate). |
+| **`autoDetectBox`** | `auto_detect_box` | Tuỳ chọn (`false`) | Đặt `true` nếu ảnh chụp toàn cảnh có nhiều món đồ (VD: ảnh outfit cả áo + quần + túi). AI Shopee sẽ tự cắt đúng khung vật thể có điểm tin cậy cao nhất trước khi tìm! |
+| **`boundingBox`** | `bounding_box` | Tuỳ chọn (`""`) | Chuỗi toạ độ cắt vùng ảnh `"left,top,width,height"` (VD: `"112,42,350,737"` lấy từ hàm `get_image_bounding_box` khi làm tính năng cho khách tự kéo khung chọn món đồ trên UI). |
+| **`offset` / `limit`** | `offset` / `limit` | Tuỳ chọn (`0` / `20`) | Phân trang kết quả: Trang 1 truyền `offset=0, limit=20`; Trang 2 truyền lại `imageId` của Trang 1 kèm `offset=20, limit=20`. |
+| **`proxy`** | `proxy` | Khuyên dùng | Proxy gắn theo tài khoản Cookie (`"ip:port:user:pass"`, `"http://user:pass@ip:port"`, `"socks5://..."`). Để `""` nếu dùng mạng trực tiếp. |
+| **`country`** | `country` | Tuỳ chọn (`"VN"`) | Mã quốc gia Shopee (`"VN"`, `"TH"`, `"ID"`, `"MY"`, `"SG"`, `"PH"`, `"BR"`). |
+
+---
+
+### 2. Code Mẫu Tích Hợp Tìm Bằng Hình Ảnh Ở 4 Ngôn Ngữ
+
+#### A. Python (`examples/image_search_shopee.py`)
+```python
+from wrappers.python.minsign_sdk import MinSignClient
+
+sdk = MinSignClient(api_key="YOUR_X_API_KEY_HERE", default_country="VN")
+COOKIE_SHOPEE = "SPC_U=...; SPC_ST=...;"
+
+# Cách 1: Tìm sản phẩm tương tự từ file ảnh trên máy (.jpg / .png / .webp đều chạy mượt!)
+res = sdk.search_products_by_image(
+    cookie=COOKIE_SHOPEE,
+    image_path=r"D:\NguonHang1688\ao_khoac_mau.webp",
+    result_type="SimilarProducts",   # Đổi thành "CheaperOptions" nếu muốn tìm Shop bán rẻ hơn!
+    auto_detect_box=True,            # Tự động nhờ AI cắt vùng sản phẩm chính trong ảnh
+    limit=20,
+    proxy="",                        # Hoặc "103.145.22.11:8080:user:pass"
+    country="VN",
+)
+print(f"Mã ảnh CDN: {res['imageId']} | Khung AI: {res.get('boundingBox')} | Trả về: {res['itemsCount']} SP")
+for sp in res["items"][:5]:
+    print(f"#{sp['rank']} [{sp['priceVnd']:,}đ | Đã bán: {sp['historicalSold']}] {sp['name']} -> {sp['productUrl']}")
+
+# Cách 2: Lật sang Trang 2 siêu tốc (truyền lại image_id vừa nhận được -> tốn 0ms upload!)
+if res["hasMore"]:
+    page2 = sdk.search_products_by_image(
+        cookie=COOKIE_SHOPEE,
+        image_id=res["imageId"],
+        bounding_box=res.get("boundingBox", ""),
+        result_type="SimilarProducts",
+        offset=res["nextOffset"],    # 20
+        limit=20,
+    )
+    print("Trang 2 trả thêm:", page2["itemsCount"], "sản phẩm!")
+
+# Cách 3 (Tuỳ chọn - 0 Cookie, 0 Lượt Ký): Chỉ lấy danh sách khung vật thể AI để vẽ ô chọn trên giao diện
+boxes = sdk.get_image_bounding_box(image_path=r"D:\NguonHang1688\anh_outfit.jpg", country="VN")
+print("Khung gợi ý tốt nhất:", boxes["bestBox"], "| Tất cả khung:", boxes["candidateBoxes"])
+```
+
+#### B. Node.js / Electron (`npm install koffi` — Chạy Worker Thread Mượt Mà)
+```javascript
+const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
+
+(async () => {
+  const sdk = new MinSignClient({ apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN" });
+  const cookie = "SPC_U=...; SPC_ST=...;";
+
+  // Hỗ trợ truyền imagePath, imageBase64 (dán Ctrl+V), imageUrl (link ảnh TikTok/1688/Shopee), hoặc productUrl!
+  const result = await sdk.searchProductsByImage({
+    cookie,
+    imageUrl: "https://down-vn.img.susercontent.com/file/vn-11134114-7ras8-mccff7oz208s9a",
+    resultType: "CheaperOptions", // "SimilarProducts" | "CheaperOptions"
+    autoDetectBox: false,
+    offset: 0,
+    limit: 20,
+    proxy: "",
+    country: "VN",
+  });
+
+  console.log(`Tìm thấy ${result.itemsCount} sản phẩm (${result.totalLatencyMs}ms):`);
+  for (const item of result.items.slice(0, 5)) {
+    console.log(`#${item.rank} - ${item.priceVnd.toLocaleString()}đ - ${item.name} (${item.productUrl})`);
+  }
+})();
+```
+
+#### C. C# (.NET / WinForms / WPF)
+```csharp
+using System;
+using MinSign;
+
+using var sdk = new MinSignClient(apiKey: "YOUR_X_API_KEY_HERE", defaultCountry: "VN");
+
+// Tìm các Shop bán rẻ hơn từ file ảnh hoặc chuỗi Base64 chụp màn hình
+var res = sdk.SearchProductsByImage(new
+{
+    cookie = "SPC_U=...; SPC_ST=...;",
+    imagePath = @"D:\Images\mau_giay.webp",
+    resultType = "CheaperOptions",
+    autoDetectBox = true,
+    offset = 0,
+    limit = 20,
+    proxy = "",
+    country = "VN"
+});
+
+var data = res.GetProperty("data");
+Console.WriteLine($"ImageID: {data.GetProperty("imageId").GetString()} | Số SP: {data.GetProperty("itemsCount").GetInt32()}");
+foreach (var item in data.GetProperty("items").EnumerateArray())
+{
+    Console.WriteLine($"#{item.GetProperty("rank")} | {item.GetProperty("priceVnd")}đ | {item.GetProperty("name")}");
+}
+```
+
+#### D. C++17 (`wrappers/cpp/minsign_sdk_client.hpp`)
+```cpp
+#include "wrappers/cpp/minsign_sdk_client.hpp"
+#include <iostream>
+
+int main() {
+    minsign::Client sdk(R"({"apiKey":"YOUR_X_API_KEY_HERE","defaultCountry":"VN"})");
+    std::string jsonRes = sdk.searchProductsByImage(R"({
+        "cookie": "SPC_U=...; SPC_ST=...;",
+        "imagePath": "D:\\Images\\sample.jpg",
+        "resultType": "SimilarProducts",
+        "limit": 20
+    })");
+    std::cout << jsonRes << std::endl;
+    return 0;
+}
+```
+
+### 3. Cấu Trúc JSON Trả Về Của `search_products_by_image`
+```json
+{
+  "country": "VN",
+  "domain": "shopee.vn",
+  "httpStatus": 200,
+  "error": 0,
+  "sourceMode": "sv_file_upload",
+  "imageId": "vn-11134114-81ztc-mv06c0iux5he52",
+  "uploadedImageUrl": "https://down-vn.img.susercontent.com/file/vn-11134114-81ztc-mv06c0iux5he52",
+  "boundingBox": "277,299,145,255",
+  "resultType": "SimilarProducts",
+  "offset": 0,
+  "limit": 20,
+  "nextOffset": 20,
+  "hasMore": true,
+  "totalCount": 20,
+  "itemsCount": 20,
+  "items": [
+    {
+      "rank": 1,
+      "itemId": "25294038727",
+      "shopId": "1023922469",
+      "name": "Vợt pickleball Perseus 4 bề mặt carbon (NFC)",
+      "priceVnd": 362600,
+      "displayPriceVnd": 362600,
+      "discountText": "-28%",
+      "sold": 450,
+      "historicalSold": 4000,
+      "soldText": "Đã bán 4k+",
+      "ratingStar": 4.9,
+      "shopLocation": "Hà Nội",
+      "isOfficialShop": false,
+      "isPreferred": true,
+      "imageUrl": "https://down-vn.img.susercontent.com/file/vn-11134207-...",
+      "productUrl": "https://shopee.vn/product/1023922469/25294038727"
+    }
+  ],
+  "signCostMs": 86,
+  "totalLatencyMs": 1881
+}
+```
+
+---
+
 ## Liên Hệ & Hỗ Trợ Kỹ Thuật
 
 - **Website Đăng Ký & Lấy `X-API-Key` Tự Động:** [https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)
-- **Tài Liệu Chi Tiết Đầy Đủ:** [`DOCS_MINSIGN_NATIVE_SDK.md`](./DOCS_MINSIGN_NATIVE_SDK.md)
+- **Cẩm Nang Riêng Tìm Kiếm Bằng Hình Ảnh:** [`DOCS_TIM_SAN_PHAM_BANG_ANH.md`](./DOCS_TIM_SAN_PHAM_BANG_ANH.md)
+- **Tài Liệu Chi Tiết Đầy Đủ 26 Hàm SDK:** [`DOCS_MINSIGN_NATIVE_SDK.md`](./DOCS_MINSIGN_NATIVE_SDK.md)
