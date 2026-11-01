@@ -1,6 +1,6 @@
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.1.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.3.0)
 
-[![Version](https://img.shields.io/badge/Release-v1.1.0%20(23%20APIs)-8B5CF6?style=for-the-badge)](https://github.com/minmin2402/shopeeapi/releases)
+[![Version](https://img.shields.io/badge/Release-v1.3.0%20(26%20APIs)-8B5CF6?style=for-the-badge)](https://github.com/minmin2402/shopeeapi/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64%20(C--ABI%20DLL)-2563EB?style=for-the-badge)](#)
 [![Shopee Regions](https://img.shields.io/badge/Regions-VN%20%7C%20TW%20%7C%20PH%20%7C%20MY%20%7C%20TH%20%7C%20ID%20%7C%20SG%20%7C%20BR-EE4D2D?style=for-the-badge)](#)
 [![Languages](https://img.shields.io/badge/Wrappers-C%23%20%7C%20Python%20%7C%20Node.js%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Delphi-10B981?style=for-the-badge)](#)
@@ -8,6 +8,11 @@
 
 **Bộ thư viện nhân gốc đa ngôn ngữ (`minsign_sdk.dll` — Chuẩn C-ABI quốc tế)** giúp lập trình viên tích hợp toàn bộ nghiệp vụ Shopee & Shopee Affiliate tốc độ cao vào bất kỳ phần mềm nào (`C# .NET`, `Python`, `Node.js / Electron`, `C/C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`...) chỉ với **1 file DLL duy nhất**:
 
+- **[MỚI v1.3.0 — Tìm Kiếm Sản Phẩm Bằng Hình Ảnh & AI Crop Vật Thể (`SearchProductsByImage` & `GetImageBoundingBox`)]:**
+  - **API Tìm Sản Phẩm Tương Tự / Giá Rẻ Hơn Bằng Hình Ảnh Thuần HTTP (`search_products_by_image`)** — Hỗ trợ 5 nguồn ảnh linh hoạt (file `.jpg/.png/.webp/.gif/.bmp` tự động chuyển JPEG trong RAM, chuỗi `imageBase64` dán từ Clipboard `Ctrl+V`, link ảnh ngoài TikTok/1688/Taobao/Web, link ảnh CDN Shopee 0ms upload, hoặc link sản phẩm Shopee), chọn chế độ `SimilarProducts` hoặc `CheaperOptions`, không cần mở trình duyệt hay giả lập!
+  - **API Nhận Diện Vùng Vật Thể AI (`get_image_bounding_box`)** — Trả về danh sách toạ độ `left,top,width,height` của các món đồ trong ảnh chụp toàn cảnh (`0` Cookie, `0` lượt ký).
+- **[MỚI v1.2.0 — Layer-2 Android Device Risk Token (`af-ac-enc-sz-token`)]:**
+  - **API Lấy Bộ Risk Token Thiết Bị (`MinSign_GetRiskToken` / `get_risk_token`)** — Sinh và lưu cache trọn bộ `af-ac-enc-sz-token`, `riskToken`, `dfp`, `longToken`, `shpSecData`, `miniToken` khớp 100% với hồ sơ máy Android cố định của từng tài khoản trong `devices_vault.json`, đồng thời hỗ trợ tham số `attachRiskHeaders: true` ngay trong `SignRaw` và `ExecuteSignedRequest` cho các luồng Checkout / Đặt hàng / Lưu Voucher nhạy cảm!
 - **[MỚI v1.1.0 — Chuyên Dụng Cho Hệ Thống Affiliate]:**
   - **API Lấy Sản Phẩm Mới Nhất Của Shop Theo Thời Gian Thực (`GetShopNewestProducts`)** — Canh hàng vừa lên kệ của bất kỳ Shop nào (`rcmd_items?sort_type=2` + `affiliate/offer` kèm hoa hồng + Zero-Cookie Index), tích hợp sẵn bộ lọc `sinceItemId`, `sinceTimestamp`, `withinHours` để chạy Bot săn SP mới tự động!
   - **API Lấy Danh Sách Video Của Shop (`GetShopVideos`)** — Tự động giải mã `shopUrl` / `shopId` / `username` sang kênh Shopee Video `userId`, lật nhiều trang liên tiếp (`maxPages`), trả sẵn link tải `.mp4` gốc **không watermark** (`mp4Url`) và danh sách sản phẩm gắn giỏ vàng (`attachedProducts[]`)!
@@ -193,7 +198,7 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 
 ---
 
-## Bảng Tổng Hợp 23 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll` (`v1.1.0`)
+## Bảng Tổng Hợp 26 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll` (`v1.3.0`)
 
 | Nhóm Chức Năng | Tên `action` (`MinSign_Invoke`) | Mô Tả Ngắn | Cần Cookie? |
 |---|---|---|---|
@@ -203,13 +208,16 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `list_local_devices` | Xem danh sách toàn bộ cặp `Tài khoản <-> Điện thoại Android` đang lưu trên máy Client | Không |
 | | `remove_local_device` | Xóa thiết bị đã lưu của 1 tài khoản để cấp máy mới | Không |
 | | `sign_raw` | Chỉ lấy bộ Header chữ ký bảo mật (`x-sap-ri`, `af-ac-enc-dat`, chữ ký động...) | Tuỳ chọn |
-| **2. Sản Phẩm, Gian Hàng & Affiliate Theo Dõi Shop** | `get_product_detail` | Lấy trọn bộ chi tiết SP: tên, giá, tồn kho, đã bán, sao, `models` phân loại, ảnh HD, thông tin Shop | **Không cần** (hoặc kèm Cookie) |
+| | **`get_risk_token`** | **[v1.2]** Sinh & lưu cache bộ Layer-2 Risk Token (`af-ac-enc-sz-token`, `dfp`, `shpSecData`) theo thiết bị | Tuỳ chọn |
+| **2. Sản Phẩm, Gian Hàng & Tìm Bằng Ảnh** | `get_product_detail` | Lấy trọn bộ chi tiết SP: tên, giá, tồn kho, đã bán, sao, `models` phân loại, ảnh HD, thông tin Shop | **Không cần** (hoặc kèm Cookie) |
 | | `get_shop_overview` | Lấy thông tin gian hàng từ link shop, `shopId` hoặc `username` (kèm `userId` kênh Video, hỗ trợ 8 nước) | **Không cần** |
 | | `get_shop_products` | Lấy danh sách sản phẩm trong gian hàng có phân trang (`limit`, `offset`) | **Không cần** |
-| | **`get_shop_newest_products`** | **[MỚI v1.1 — Affiliate]** Lấy SP mới nhất vừa lên kệ của Shop theo thời gian thực (`sinceItemId`, `sinceTimestamp`, `withinHours`, kèm `affiliateProductTag` & hoa hồng) | **Không cần** (khuyên kèm Cookie để mở full `sort_type=2`) |
+| | **`get_shop_newest_products`** | **[v1.1 — Affiliate]** Lấy SP mới nhất vừa lên kệ của Shop theo thời gian thực (`sinceItemId`, `sinceTimestamp`, `withinHours`, kèm `affiliateProductTag` & hoa hồng) | **Không cần** (khuyên kèm Cookie để mở full `sort_type=2`) |
 | | `get_shop_categories` | Lấy danh mục con nội bộ của gian hàng | **Không cần** |
 | | `get_shop_vouchers` | Quét danh sách mã giảm giá / Voucher đang mở của gian hàng | **Không cần** |
 | | `search_products` | Tìm kiếm sản phẩm theo từ khóa (`relevancy`, `sales`, `ctime`, `price`) | Tuỳ chọn |
+| | **`search_products_by_image`** | **[MỚI v1.3]** Tìm kiếm sản phẩm tương tự (`SimilarProducts`) hoặc giá rẻ hơn (`CheaperOptions`) bằng file ảnh / Base64 / URL ảnh TikTok-1688-Shopee / Link SP | **Bắt buộc (`SPC_ST`)** |
+| | **`get_image_bounding_box`** | **[MỚI v1.3]** AI nhận diện toạ độ khung vật thể sản phẩm trong ảnh (`left,top,width,height` — `0` lượt ký) | **Không cần** |
 | | `get_category_tree` | Lấy toàn bộ cây danh mục ngành hàng Shopee theo quốc gia | **Không cần** |
 | **3. Đăng Video & Affiliate** | `upload_shopee_video` | Pipeline 4 bước đăng Shopee Video thuần API + gắn tối đa 6 link SP giỏ hàng vàng + Duet | **Bắt buộc** |
 | | `precheck_video_upload` | Kiểm tra nhanh Cookie còn sống và có quyền đăng Shopee Video không | **Bắt buộc** |
@@ -220,8 +228,7 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `get_video_detail` | Lấy thống kê chi tiết 1 video Shopee (lượt xem, tim, bình luận, `mp4Url`) | Tuỳ chọn |
 | | **`get_shop_videos`** | **[MỚI v1.1 — Affiliate]** Quét toàn bộ danh sách Video của Shop (tự động giải mã `Shop -> userId`, hỗ trợ lật nhiều trang `maxPages`, trả `mp4Url` gốc không logo & `attachedProducts[]`) | Khuyên truyền Cookie nick phụ |
 | | `get_channel_and_hashtag_videos` | Quét danh sách video theo Kênh người dùng hoặc theo Hashtag | Tuỳ chọn |
-| **5. Giỏ Hàng & Mở Rộng** | `add_to_cart` | Tự động ký POST thêm sản phẩm / phân loại (`modelId`) vào giỏ hàng | **Bắt buộc** |
-| | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |
+| **5. Cổng Ký Mở Rộng** | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |
 
 ---
 

@@ -1,6 +1,6 @@
-# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.1.0)
+# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.2.0)
 
-**Phiên bản:** `1.1.0` (Windows x64 Native Shared Library — C-ABI Standard · **23 Hàm Dựng Sẵn**)  
+**Phiên bản:** `1.2.0` (Windows x64 Native Shared Library — C-ABI Standard · **24 Hàm Dựng Sẵn**)  
 **Máy chủ Ký Bảo Mật Mặc Định:** `https://vip-sign.minmintool.site` (Yêu cầu mã `X-API-Key`)  
 **Hỗ trợ 8 Thị trường Shopee:** `VN`, `TW`, `PH`, `MY`, `TH`, `ID`, `SG`, `BR`  
 **Ngôn ngữ tương thích 100%:** `C# (.NET Framework / .NET 6-9)`, `Python`, `Node.js / Electron`, `C / C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`, `Go`...
@@ -81,7 +81,8 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | | `MinSign_BindAccountDevice(json)` | `bind_account_device` | Gắn trước & đồng bộ cố định 1 máy Android cho 1 `cookie` / `accountId` và lưu vào `devices_vault.json`. |
 | | `MinSign_ListLocalDevices()` | `list_local_devices` | Lấy danh sách toàn bộ cặp `Acc <-> Thiết bị` đang lưu trên máy Client. |
 | | `MinSign_RemoveLocalDevice(json)` | `remove_local_device` | Xóa 1 hồ sơ thiết bị khỏi `devices_vault.json` theo `accountKey` (khi muốn đổi máy mới cho nick). |
-| | `MinSign_SignRaw(json)` | `sign_raw` | Chỉ xin bộ Header chữ ký bảo mật từ Server Ký (tự động giữ cố định máy theo Acc). |
+| | `MinSign_SignRaw(json)` | `sign_raw` | Xin bộ Header chữ ký bảo mật từ Server Ký (hỗ trợ gắn kèm Layer-2 `attachRiskHeaders: true`). |
+| | `MinSign_GetRiskToken(json)` | `get_risk_token` | **[MỚI v1.2]** Khởi tạo / lấy bộ **Layer-2 Android Device Risk Token** (`af-ac-enc-sz-token`, `riskToken`, `dfp`, `longToken`, `shpSecData`, `miniToken`) cố định theo đúng máy của Acc trong `devices_vault.json`. |
 | **2. Sản Phẩm & Gian Hàng (8 Quốc Gia)** | `MinSign_GetProductDetail(json)` | `get_product_detail` | Lấy chi tiết sản phẩm đầy đủ (tên, giá, tồn kho, đã bán, biến thể `models`, bộ ảnh HD, video, thông tin Shop). Hỗ trợ truyền link rút gọn, link SP hoặc `shopId` + `itemId`. |
 | | `MinSign_GetShopOverview(json)` | `get_shop_overview` | Lấy hồ sơ gian hàng từ `shopUrl`, `shopId` hoặc `username` (tự động giải `shopId -> username` cho cả VN, TW, PH, MY, TH, ID, SG, BR). |
 | | `MinSign_GetShopProducts(json)` | `get_shop_products` | Lấy danh sách sản phẩm trong gian hàng có phân trang (`limit`, `offset`) + fallback tìm kiếm nội bộ shop. |
@@ -99,8 +100,7 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | | `MinSign_GetVideoDetail(json)` | `get_video_detail` | Lấy thông tin chi tiết 1 bài đăng Shopee Video (lượt xem hiện tại, tim, bình luận, tác giả, `mp4Url`, `viewToken`). |
 | | `MinSign_GetShopVideos(json)` | `get_shop_videos` | **[MỚI v1.1 — Chuyên Dụng Affiliate]** Lấy **danh sách toàn bộ Video của Shop** (`shopUrl` / `shopId` / `username` $\rightarrow$ tự động giải mã sang kênh Shopee Video `userId` + quét `/api/v2/timeline/me` hỗ trợ lật nhiều trang `maxPages`). Trả sẵn link `.mp4` CDN gốc không watermark (`mp4Url`), lượt xem/tim/comment và danh sách SP gắn giỏ vàng (`attachedProducts[]`)! |
 | | `MinSign_GetChannelAndHashtagVideos(json)` | `get_channel_and_hashtag_videos` | Quét danh sách toàn bộ video của 1 Kênh người dùng (`mode: "channel"`) hoặc theo Hashtag (`mode: "hashtag"`). |
-| **5. Giỏ Hàng & Mở Rộng** | `MinSign_AddToCart(json)` | `add_to_cart` | Tự động ký POST và thêm sản phẩm / phân loại (`modelId`) vào giỏ hàng tài khoản Shopee. |
-| | `MinSign_ExecuteSignedRequest(json)` | `execute_signed_request` | **Hàm vạn năng**: Cho phép coder truyền bất kỳ URL API Shopee GET/POST nào — SDK tự gắn máy cố định của Acc, tự xin chữ ký Server và tự bắn qua Proxy bằng `uTLS` Android! |
+| **5. Cổng Ký Mở Rộng** | `MinSign_ExecuteSignedRequest(json)` | `execute_signed_request` | **Hàm vạn năng**: Cho phép coder truyền bất kỳ URL API Shopee GET/POST nào — SDK tự gắn máy cố định của Acc, tự xin chữ ký Server và tự bắn qua Proxy bằng `uTLS` Android! |
 
 ---
 
@@ -422,6 +422,167 @@ Mọi hàm C-ABI của `minsign_sdk.dll` đều trả về chuỗi JSON UTF-8 đ
     "error": "Mô tả nguyên nhân lỗi rõ ràng bằng Tiếng Việt"
   }
   ```
+
+---
+
+## 7. Hướng Dẫn Sử Dụng Layer-2 Risk Token (`MinSign_GetRiskToken` & `attachRiskHeaders`)
+
+Từ phiên bản **v1.2.0**, `minsign_sdk.dll` tích hợp trực tiếp động cơ sinh **Layer-2 Android Device Risk Token** (`af-ac-enc-sz-token`, `riskToken`, `dfp`, `longToken`, `shpSecData`, `miniToken`, `miniUuid`) đồng bộ 100% với hồ sơ phần cứng cố định của từng tài khoản trong `devices_vault.json`.
+
+### Cách 1: Lấy riêng bộ Risk Token cho Thiết bị / Tài khoản (`get_risk_token`)
+
+- **Python:**
+  ```python
+  risk = sdk.get_risk_token(
+      country="VN",
+      cookie="SPC_U=15710177307; SPC_ST=...",  # Tự động gắn cố định theo máy của Acc trong Vault
+      force_refresh=False,                     # True nếu muốn ép cấp mới từ máy chủ
+  )
+  print("af-ac-enc-sz-token:", risk["afAcEncSzToken"])
+  print("dfp:", risk["dfp"])
+  print("Headers gắn sẵn:", risk["headers"])
+  ```
+
+- **C# (.NET):**
+  ```csharp
+  var risk = sdk.GetRiskToken(new {
+      country = "VN",
+      cookie = "SPC_U=15710177307; SPC_ST=...",
+      forceRefresh = false
+  });
+  string szToken = risk.GetProperty("data").GetProperty("afAcEncSzToken").GetString();
+  ```
+
+- **Node.js / Electron:**
+  ```javascript
+  const risk = await sdk.getRiskToken({
+    country: "VN",
+    cookie: "SPC_U=15710177307; SPC_ST=...",
+    forceRefresh: false,
+  });
+  console.log("af-ac-enc-sz-token:", risk.afAcEncSzToken);
+  ```
+
+### Cách 2: Tự động gắn luôn `af-ac-enc-sz-token` vào Header khi Ký hoặc Gọi API Nhạy Cảm (`attachRiskHeaders: true`)
+
+Khi gọi các API nhạy cảm như `checkout/get`, `place_order`, `add_to_cart`, hoặc `voucher/save`, bạn chỉ cần bật `attach_risk_headers=True` (`attachRiskHeaders: true`):
+
+```python
+res = sdk.execute_signed_request(
+    url="https://mall.shopee.vn/api/v4/cart/get",
+    method="POST",
+    body={},
+    cookie="SPC_U=15710177307; SPC_ST=...",
+    proxy="http://user:pass@ip:port",
+    attach_risk_headers=True,   # Tự động đính kèm af-ac-enc-sz-token vào Header gửi lên Shopee!
+    include_risk_tokens=True,
+)
+```
+
+---
+
+## 8. Tìm Kiếm Sản Phẩm Bằng Hình Ảnh & AI Crop Vật Thể (`v1.3.0+`)
+
+Từ phiên bản **v1.3.0**, `minsign_sdk.dll` tích hợp sẵn bộ đôi API **Tìm kiếm sản phẩm bằng hình ảnh thuần HTTP (`SearchProductsByImage`)** và **AI nhận diện vùng vật thể sản phẩm (`GetImageBoundingBox`)** mà không cần mở trình duyệt hay giả lập.
+
+### 8.1. Bốn Chế Độ Đầu Vào Linh Hoạt Của `search_products_by_image`
+
+Chỉ cần truyền **Cookie tài khoản Shopee còn sống (có `SPC_ST`)** kèm **1 trong 5 nguồn ảnh** sau, SDK sẽ tự động điều phối toàn bộ quy trình:
+1. **`imagePath`**: Đường dẫn file ảnh trên máy tính (`.jpg`, `.png`, `.webp`) $\rightarrow$ SDK tự upload lên `sv.<domain>/api/v2/biz/file/image` (`0` lượt ký) lấy mã ảnh rồi truy vấn (`1` lượt ký).
+2. **`imageBase64`**: Chuỗi ảnh Base64 (hỗ trợ cả raw base64 lẫn `data:image/jpeg;base64,...` khi người dùng dán ảnh từ Clipboard `Ctrl+V` trên giao diện Tool!).
+3. **`imageUrl`**:
+   - Nếu là link ảnh bất kỳ từ **TikTok / 1688 / Taobao / Facebook / Web ngoài**: SDK tự tải ảnh về RAM, đẩy lên CDN Shopee (`0` lượt ký) rồi tìm kiếm!
+   - Nếu đã là link ảnh CDN Shopee (`https://down-vn.img.susercontent.com/file/<hash>`): SDK tự tách `<hash>` tìm thẳng trong **`0ms` upload**!
+4. **`imageId` / `md5`**: Mã ảnh CDN Shopee có sẵn (VD: `"vn-11134207-..."`) $\rightarrow$ Tìm thẳng không cần upload.
+5. **`productUrl` (hoặc `shopId` + `itemId`)**: Dán link sản phẩm Shopee bất kỳ $\rightarrow$ SDK tự lấy ảnh bìa sản phẩm và tìm toàn bộ các Shop đang bán sản phẩm giống hệt hoặc rẻ hơn (`resultType: "CheaperOptions"`)!
+
+### 8.2. Ví Dụ Gọi Nhanh Trên Node.js / Electron (`MinShopee Studio Pro`) & Python
+
+- **Node.js / Electron (`wrappers/nodejs/minsign_sdk.js`):**
+  ```javascript
+  const { MinSignClient } = require("./minsign_sdk");
+  const sdk = new MinSignClient({ apiKey: "YOUR_X_API_KEY" });
+
+  // 1) Tìm sản phẩm tương tự hoặc giá rẻ hơn từ File ảnh / Base64 / Link ảnh ngoài / Link SP
+  const res = await sdk.searchProductsByImage({
+    cookie: "SPC_ST=...; SPC_U=...;",       // Bắt buộc có SPC_ST của tài khoản Shopee
+    imagePath: "D:/anh_khach_gui.jpg",      // Hoặc truyền imageBase64 / imageUrl / productUrl / imageId
+    country: "VN",
+    resultType: "SimilarProducts",          // "SimilarProducts" | "CheaperOptions" (Tìm nơi bán rẻ hơn!)
+    offset: 0,
+    limit: 20,
+    autoDetectBox: false,                   // Bật true nếu ảnh chụp toàn cảnh nhiều đồ vật cần AI tự cắt khung
+    proxy: ""                               // Tuỳ chọn: "http://user:pass@ip:port"
+  });
+
+  console.log(`Tìm thấy ${res.itemsCount} SP (imageId=${res.imageId}):`);
+  for (const item of res.items) {
+    console.log(`#${item.rank} [${item.shopId}.${item.itemId}] ${item.name} - ${item.priceVnd}đ (Đã bán: ${item.historicalSold})`);
+  }
+
+  // 2) (Tuỳ chọn - 0 Cookie, 0 Lượt Ký) Lấy danh sách toạ độ khung vật thể để vẽ ô chọn trên UI
+  const boxes = await sdk.getImageBoundingBox({
+    imagePath: "D:/anh_chup_man_hinh.jpg",
+    country: "VN"
+  });
+  // boxes.bestBox => "112,42,350,737" (truyền lại vào trường boundingBox của searchProductsByImage khi user kéo khung!)
+  ```
+
+- **Python (`wrappers/python/minsign_sdk.py`):**
+  ```python
+  res = sdk.search_products_by_image(
+      cookie="SPC_ST=...;",
+      image_path="D:/mau_hang_1688.jpg",
+      result_type="CheaperOptions",   # Hoặc "SimilarProducts"
+      limit=20,
+      auto_detect_box=True,
+  )
+  for sp in res["items"]:
+      print(sp["rank"], sp["name"], sp["priceVnd"], sp["productUrl"])
+  ```
+
+### 8.3. Cấu Trúc JSON Kết Quả Của `search_products_by_image`
+
+```json
+{
+  "country": "VN",
+  "domain": "shopee.vn",
+  "httpStatus": 200,
+  "error": 0,
+  "sourceMode": "sv_file_upload",
+  "imageId": "vn-11134114-81ztc-mv04sc1z7wne48",
+  "uploadedImageUrl": "https://down-vn.img.susercontent.com/file/vn-11134114-81ztc-mv04sc1z7wne48",
+  "resultType": "SimilarProducts",
+  "offset": 0,
+  "limit": 20,
+  "nextOffset": 20,
+  "hasMore": true,
+  "totalCount": 20,
+  "itemsCount": 20,
+  "items": [
+    {
+      "rank": 1,
+      "itemId": "25294038727",
+      "shopId": "1023922469",
+      "name": "Vợt pickleball Perseus 4 bề mặt carbon (NFC)",
+      "priceVnd": 362600,
+      "displayPriceVnd": 362600,
+      "discountText": "-28%",
+      "sold": 450,
+      "historicalSold": 4000,
+      "soldText": "Đã bán 4k+",
+      "ratingStar": 4.9,
+      "shopLocation": "Hà Nội",
+      "isOfficialShop": false,
+      "isPreferred": true,
+      "imageUrl": "https://down-vn.img.susercontent.com/file/vn-11134207-...",
+      "productUrl": "https://shopee.vn/product/1023922469/25294038727"
+    }
+  ],
+  "signCostMs": 38,
+  "totalLatencyMs": 1120
+}
+```
 
 ---
 

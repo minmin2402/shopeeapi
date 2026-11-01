@@ -47,6 +47,9 @@ class MinSignClient:
         self._lib.MinSign_ListLocalDevices.argtypes = []
         self._lib.MinSign_ListLocalDevices.restype = ctypes.c_void_p
 
+        self._lib.MinSign_GetRiskToken.argtypes = [ctypes.c_char_p]
+        self._lib.MinSign_GetRiskToken.restype = ctypes.c_void_p
+
         self._lib.MinSign_Invoke.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
         self._lib.MinSign_Invoke.restype = ctypes.c_void_p
 
@@ -135,11 +138,62 @@ class MinSignClient:
     def remove_local_device(self, account_key: str) -> Dict[str, Any]:
         return self.invoke("remove_local_device", {"accountKey": account_key})["data"]
 
-    def sign_raw(self, url: str, body: str = "", country: str = "", cookie: str = "", account_id: str = "", device_id: str = "", fetch_live: bool = False) -> Dict[str, Any]:
+    def sign_raw(
+        self,
+        url: str,
+        body: str = "",
+        country: str = "",
+        cookie: str = "",
+        account_id: str = "",
+        device_id: str = "",
+        brand: str = "",
+        fetch_live: bool = False,
+        include_risk_tokens: bool = False,
+        attach_risk_headers: bool = False,
+        force_refresh_risk: bool = False,
+        sec_token: str = "",
+    ) -> Dict[str, Any]:
         return self.invoke(
             "sign_raw",
-            {"url": url, "body": body, "country": country, "cookie": cookie, "accountId": account_id, "deviceId": device_id, "fetchLive": fetch_live},
+            {
+                "url": url,
+                "body": body,
+                "country": country,
+                "cookie": cookie,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "brand": brand,
+                "fetchLive": fetch_live,
+                "includeRiskTokens": include_risk_tokens,
+                "attachRiskHeaders": attach_risk_headers,
+                "forceRefreshRisk": force_refresh_risk,
+                "secToken": sec_token,
+            },
         )["data"]
+
+    def get_risk_token(
+        self,
+        country: str = "VN",
+        cookie: str = "",
+        account_id: str = "",
+        device_id: str = "",
+        brand: str = "",
+        force_refresh: bool = False,
+        sec_token: str = "",
+    ) -> Dict[str, Any]:
+        payload = json.dumps(
+            {
+                "country": country,
+                "cookie": cookie,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "brand": brand,
+                "forceRefresh": force_refresh,
+                "secToken": sec_token,
+            },
+            ensure_ascii=False,
+        ).encode("utf-8")
+        return self._consume_ptr(self._lib.MinSign_GetRiskToken(payload))["data"]
 
     # --- Nhóm 2: Chi tiết Sản Phẩm, Gian Hàng, Voucher, Tìm kiếm ---
     def get_product_detail(self, product_url: str = "", shop_id: str = "", item_id: str = "", proxy: str = "", cookie: str = "", country: str = "", account_id: str = "", include_shop: bool = True) -> Dict[str, Any]:
@@ -204,6 +258,72 @@ class MinSignClient:
 
     def search_products(self, keyword: str, country: str = "VN", sort_by: str = "relevancy", page: int = 0, limit: int = 20, proxy: str = "", cookie: str = "") -> Dict[str, Any]:
         return self.invoke("search_products", {"keyword": keyword, "country": country, "sortBy": sort_by, "page": page, "limit": limit, "proxy": proxy, "cookie": cookie})["data"]
+
+    def search_products_by_image(
+        self,
+        cookie: str,
+        image_path: str = "",
+        image_base64: str = "",
+        image_url: str = "",
+        image_id: str = "",
+        product_url: str = "",
+        shop_id: str = "",
+        item_id: str = "",
+        country: str = "VN",
+        result_type: str = "SimilarProducts",
+        offset: int = 0,
+        limit: int = 20,
+        bounding_box: str = "",
+        auto_detect_box: bool = False,
+        force_upload: bool = False,
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "search_products_by_image",
+            {
+                "cookie": cookie,
+                "imagePath": image_path,
+                "imageBase64": image_base64,
+                "imageUrl": image_url,
+                "imageId": image_id,
+                "productUrl": product_url,
+                "shopId": str(shop_id or ""),
+                "itemId": str(item_id or ""),
+                "country": country,
+                "resultType": result_type,
+                "offset": offset,
+                "limit": limit,
+                "boundingBox": bounding_box,
+                "autoDetectBox": auto_detect_box,
+                "forceUpload": force_upload,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def get_image_bounding_box(
+        self,
+        image_path: str = "",
+        image_base64: str = "",
+        image_url: str = "",
+        country: str = "VN",
+        image_source: str = "local",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "get_image_bounding_box",
+            {
+                "imagePath": image_path,
+                "imageBase64": image_base64,
+                "imageUrl": image_url,
+                "country": country,
+                "imageSource": image_source,
+                "proxy": proxy,
+            },
+        )["data"]
 
     def get_category_tree(self, country: str = "VN", proxy: str = "") -> Dict[str, Any]:
         return self.invoke("get_category_tree", {"country": country, "proxy": proxy})["data"]
@@ -343,9 +463,40 @@ class MinSignClient:
     def get_channel_and_hashtag_videos(self, mode: str = "channel", request_user_id: str = "", hashtag_id: str = "", limit: int = 20, proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
         return self.invoke("get_channel_and_hashtag_videos", {"mode": mode, "requestUserId": request_user_id, "hashtagId": hashtag_id, "limit": limit, "proxy": proxy, "cookie": cookie, "country": country})["data"]
 
-    # --- Nhóm 5: Giỏ hàng & Gọi Ký Mở Rộng ---
-    def add_to_cart(self, shop_id: int, item_id: int, cookie: str, model_id: int = 0, quantity: int = 1, proxy: str = "", country: str = "VN") -> Dict[str, Any]:
-        return self.invoke("add_to_cart", {"shopId": shop_id, "itemId": item_id, "modelId": model_id, "quantity": quantity, "cookie": cookie, "proxy": proxy, "country": country})["data"]
-
-    def execute_signed_request(self, url: str, method: str = "GET", body: Any = None, proxy: str = "", cookie: str = "", country: str = "", custom_headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-        return self.invoke("execute_signed_request", {"url": url, "method": method, "body": body, "proxy": proxy, "cookie": cookie, "country": country, "customHeaders": custom_headers or {}})["data"]
+    # --- Nhóm 5: Cổng Gọi Ký Mở Rộng Vạn Năng ---
+    def execute_signed_request(
+        self,
+        url: str,
+        method: str = "GET",
+        body: Any = None,
+        proxy: str = "",
+        cookie: str = "",
+        country: str = "",
+        account_id: str = "",
+        device_id: str = "",
+        brand: str = "",
+        include_risk_tokens: bool = False,
+        attach_risk_headers: bool = False,
+        force_refresh_risk: bool = False,
+        sec_token: str = "",
+        custom_headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "execute_signed_request",
+            {
+                "url": url,
+                "method": method,
+                "body": body,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "brand": brand,
+                "includeRiskTokens": include_risk_tokens,
+                "attachRiskHeaders": attach_risk_headers,
+                "forceRefreshRisk": force_refresh_risk,
+                "secToken": sec_token,
+                "customHeaders": custom_headers or {},
+            },
+        )["data"]

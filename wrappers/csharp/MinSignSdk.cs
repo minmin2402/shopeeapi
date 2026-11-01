@@ -49,6 +49,9 @@ namespace MinSign
         private static extern IntPtr MinSign_ListLocalDevices();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetRiskToken(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr MinSign_Invoke(IntPtr actionUtf8, IntPtr reqJsonUtf8);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -92,6 +95,16 @@ namespace MinSign
         public JsonElement BindAccountDevice(object request) => Invoke("bind_account_device", request);
         public JsonElement RemoveLocalDevice(string accountKey) => Invoke("remove_local_device", new { accountKey });
         public JsonElement SignRaw(object request) => Invoke("sign_raw", request);
+        public JsonElement GetRiskToken(object request = null)
+        {
+            string jsonStr = request is string s ? s : JsonSerializer.Serialize(request ?? new { });
+            return CallPtr(() =>
+            {
+                IntPtr pReq = ToUtf8Ptr(jsonStr);
+                try { return MinSign_GetRiskToken(pReq); }
+                finally { Marshal.FreeHGlobal(pReq); }
+            });
+        }
 
         // Nhóm Sản Phẩm, Shop, Voucher, Tìm Kiếm & Affiliate Theo Dõi Shop
         public JsonElement GetProductDetail(object request) => Invoke("get_product_detail", request);
@@ -102,6 +115,8 @@ namespace MinSign
         public JsonElement GetShopCategories(object request) => Invoke("get_shop_categories", request);
         public JsonElement GetShopVouchers(object request) => Invoke("get_shop_vouchers", request);
         public JsonElement SearchProducts(object request) => Invoke("search_products", request);
+        public JsonElement SearchProductsByImage(object request) => Invoke("search_products_by_image", request);
+        public JsonElement GetImageBoundingBox(object request) => Invoke("get_image_bounding_box", request);
         public JsonElement GetCategoryTree(object request = null) => Invoke("get_category_tree", request ?? new { });
 
         // Nhóm Đăng Video Shopee & Affiliate
@@ -116,8 +131,7 @@ namespace MinSign
         public JsonElement GetVideoDetail(object request) => Invoke("get_video_detail", request);
         public JsonElement GetChannelAndHashtagVideos(object request) => Invoke("get_channel_and_hashtag_videos", request);
 
-        // Nhóm Giỏ Hàng & Gọi Ký Mở Rộng
-        public JsonElement AddToCart(object request) => Invoke("add_to_cart", request);
+        // Nhóm Cổng Ký Mở Rộng Vạn Năng
         public JsonElement ExecuteSignedRequest(object request) => Invoke("execute_signed_request", request);
 
         public JsonElement Invoke(string action, object payload)

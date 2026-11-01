@@ -25,6 +25,7 @@ public:
         fnInit_   = reinterpret_cast<Fn1>(GetProcAddress(handle_, "MinSign_Init"));
         fnCheck_  = reinterpret_cast<Fn0>(GetProcAddress(handle_, "MinSign_CheckApiKey"));
         fnList_   = reinterpret_cast<Fn0>(GetProcAddress(handle_, "MinSign_ListLocalDevices"));
+        fnRisk_   = reinterpret_cast<Fn1>(GetProcAddress(handle_, "MinSign_GetRiskToken"));
         fnInvoke_ = reinterpret_cast<Fn2>(GetProcAddress(handle_, "MinSign_Invoke"));
         fnFree_   = reinterpret_cast<FnFree>(GetProcAddress(handle_, "MinSign_Free"));
 #else
@@ -33,6 +34,7 @@ public:
         fnInit_   = reinterpret_cast<Fn1>(dlsym(handle_, "MinSign_Init"));
         fnCheck_  = reinterpret_cast<Fn0>(dlsym(handle_, "MinSign_CheckApiKey"));
         fnList_   = reinterpret_cast<Fn0>(dlsym(handle_, "MinSign_ListLocalDevices"));
+        fnRisk_   = reinterpret_cast<Fn1>(dlsym(handle_, "MinSign_GetRiskToken"));
         fnInvoke_ = reinterpret_cast<Fn2>(dlsym(handle_, "MinSign_Invoke"));
         fnFree_   = reinterpret_cast<FnFree>(dlsym(handle_, "MinSign_Free"));
 #endif
@@ -62,6 +64,11 @@ public:
         return consume(fnInvoke_(action.c_str(), reqJson.c_str()));
     }
 
+    std::string getRiskToken(const std::string& reqJson = "{}") const {
+        if (fnRisk_) return consume(fnRisk_(reqJson.c_str()));
+        return invoke("get_risk_token", reqJson);
+    }
+    std::string signRaw(const std::string& reqJson) const { return invoke("sign_raw", reqJson); }
     std::string getProductDetail(const std::string& reqJson) const { return invoke("get_product_detail", reqJson); }
     std::string getShopOverview(const std::string& reqJson) const { return invoke("get_shop_overview", reqJson); }
     std::string getShopProducts(const std::string& reqJson) const { return invoke("get_shop_products", reqJson); }
@@ -69,6 +76,8 @@ public:
     std::string getShopVideos(const std::string& reqJson) const { return invoke("get_shop_videos", reqJson); }
     std::string getShopVouchers(const std::string& reqJson) const { return invoke("get_shop_vouchers", reqJson); }
     std::string searchProducts(const std::string& reqJson) const { return invoke("search_products", reqJson); }
+    std::string searchProductsByImage(const std::string& reqJson) const { return invoke("search_products_by_image", reqJson); }
+    std::string getImageBoundingBox(const std::string& reqJson) const { return invoke("get_image_bounding_box", reqJson); }
     std::string uploadShopeeVideo(const std::string& reqJson) const { return invoke("upload_shopee_video", reqJson); }
     std::string precheckVideoUpload(const std::string& reqJson) const { return invoke("precheck_video_upload", reqJson); }
     std::string mutateMp4Fingerprint(const std::string& reqJson) const { return invoke("mutate_mp4_fingerprint", reqJson); }
@@ -92,6 +101,7 @@ private:
     Fn1 fnInit_     = nullptr;
     Fn0 fnCheck_    = nullptr;
     Fn0 fnList_     = nullptr;
+    Fn1 fnRisk_     = nullptr;
     Fn2 fnInvoke_   = nullptr;
     FnFree fnFree_  = nullptr;
     std::string initResponse_;

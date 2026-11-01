@@ -33,6 +33,7 @@ class MinSignClient {
     this._fnInit = lib.func("void* MinSign_Init(const char* configJson)");
     this._fnCheckKey = lib.func("void* MinSign_CheckApiKey()");
     this._fnListDevices = lib.func("void* MinSign_ListLocalDevices()");
+    this._fnGetRiskToken = lib.func("void* MinSign_GetRiskToken(const char* reqJson)");
     this._fnInvoke = lib.func("void* MinSign_Invoke(const char* action, const char* reqJson)");
     this._fnFree = lib.func("void MinSign_Free(void* ptr)");
 
@@ -100,6 +101,19 @@ class MinSignClient {
   listLocalDevices() { return Promise.resolve(this._consumePtr(this._fnListDevices())); }
   removeLocalDevice(accountKey) { return this.invoke("remove_local_device", { accountKey }); }
   signRaw(req) { return this.invoke("sign_raw", req); }
+  getRiskToken(req = {}) {
+    const jsonReq = typeof req === "string" ? req : JSON.stringify(req || {});
+    return new Promise((resolve, reject) => {
+      this._fnGetRiskToken.async(jsonReq, (err, ptr) => {
+        if (err) return reject(err);
+        try {
+          resolve(this._consumePtr(ptr));
+        } catch (ex) {
+          reject(ex);
+        }
+      });
+    });
+  }
 
   // Sản phẩm, Shop, Voucher, Tìm kiếm & Affiliate Theo Dõi Shop
   getProductDetail(req) { return this.invoke("get_product_detail", req); }
@@ -110,6 +124,8 @@ class MinSignClient {
   getShopCategories(req) { return this.invoke("get_shop_categories", req); }
   getShopVouchers(req) { return this.invoke("get_shop_vouchers", req); }
   searchProducts(req) { return this.invoke("search_products", req); }
+  searchProductsByImage(req) { return this.invoke("search_products_by_image", req); }
+  getImageBoundingBox(req) { return this.invoke("get_image_bounding_box", req); }
   getCategoryTree(req = {}) { return this.invoke("get_category_tree", req); }
 
   // Đăng Video Shopee & Affiliate
@@ -124,8 +140,7 @@ class MinSignClient {
   getVideoDetail(req) { return this.invoke("get_video_detail", req); }
   getChannelAndHashtagVideos(req) { return this.invoke("get_channel_and_hashtag_videos", req); }
 
-  // Giỏ hàng & Cổng Ký Vạn Năng
-  addToCart(req) { return this.invoke("add_to_cart", req); }
+  // Cổng Ký Vạn Năng
   executeSignedRequest(req) { return this.invoke("execute_signed_request", req); }
 }
 
