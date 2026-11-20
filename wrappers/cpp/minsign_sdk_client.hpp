@@ -83,6 +83,9 @@ public:
     std::string mutateMp4Fingerprint(const std::string& reqJson) const { return invoke("mutate_mp4_fingerprint", reqJson); }
     std::string buffVideoView(const std::string& reqJson) const { return invoke("buff_video_view", reqJson); }
     std::string buffVideoBatch(const std::string& reqJson) const { return invoke("buff_video_batch", reqJson); }
+    std::string getLiveSessionDetail(const std::string& reqJson) const { return invoke("get_live_session_detail", reqJson); }
+    std::string buffLiveView(const std::string& reqJson) const { return invoke("buff_live_view", reqJson); }
+    std::string buffLiveBatch(const std::string& reqJson) const { return invoke("buff_live_batch", reqJson); }
     std::string executeSignedRequest(const std::string& reqJson) const { return invoke("execute_signed_request", reqJson); }
 
     const std::string& initResponse() const { return initResponse_; }

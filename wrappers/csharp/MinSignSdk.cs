@@ -131,6 +131,11 @@ namespace MinSign
         public JsonElement GetVideoDetail(object request) => Invoke("get_video_detail", request);
         public JsonElement GetChannelAndHashtagVideos(object request) => Invoke("get_channel_and_hashtag_videos", request);
 
+        // Nhóm Buff View / Mắt Live Shopee
+        public JsonElement GetLiveSessionDetail(object request) => Invoke("get_live_session_detail", request);
+        public JsonElement BuffLiveView(object request) => Invoke("buff_live_view", request);
+        public JsonElement BuffLiveBatch(object request) => Invoke("buff_live_batch", request);
+
         // Nhóm Cổng Ký Mở Rộng Vạn Năng
         public JsonElement ExecuteSignedRequest(object request) => Invoke("execute_signed_request", request);
 

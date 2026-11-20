@@ -463,7 +463,123 @@ class MinSignClient:
     def get_channel_and_hashtag_videos(self, mode: str = "channel", request_user_id: str = "", hashtag_id: str = "", limit: int = 20, proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
         return self.invoke("get_channel_and_hashtag_videos", {"mode": mode, "requestUserId": request_user_id, "hashtagId": hashtag_id, "limit": limit, "proxy": proxy, "cookie": cookie, "country": country})["data"]
 
-    # --- Nhóm 5: Cổng Gọi Ký Mở Rộng Vạn Năng ---
+    # --- Nhóm 5: Buff View / Mắt Live Shopee ---
+    def get_live_session_detail(
+        self,
+        live_url: str = "",
+        session_id: str = "",
+        proxy: str = "",
+        cookie: str = "",
+        country: str = "VN",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "get_live_session_detail",
+            {
+                "liveUrl": live_url,
+                "sessionId": str(session_id or ""),
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def buff_live_view(
+        self,
+        live_url: str = "",
+        session_id: str = "",
+        proxy: str = "",
+        cookie: str = "",
+        watch_seconds: int = 18,
+        simulate_wait: bool = False,
+        connect_ws: bool = True,
+        pull_stream: bool = True,
+        report_heartbeat: bool = True,
+        send_exit: bool = True,
+        send_like: bool = False,
+        like_count: int = 0,
+        bypass_stream_proxy: bool = False,
+        stream_lite_mode: bool = False,
+        country: str = "VN",
+        account_id: str = "",
+        device_id: str = "",
+        from_source: str = "share",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "buff_live_view",
+            {
+                "liveUrl": live_url,
+                "sessionId": str(session_id or ""),
+                "proxy": proxy,
+                "cookie": cookie,
+                "watchSeconds": watch_seconds,
+                "simulateWait": simulate_wait,
+                "connectWs": connect_ws,
+                "pullStream": pull_stream,
+                "reportHeartbeat": report_heartbeat,
+                "sendExit": send_exit,
+                "sendLike": send_like,
+                "likeCount": like_count,
+                "bypassStreamProxy": bypass_stream_proxy,
+                "streamLiteMode": stream_lite_mode,
+                "country": country,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "fromSource": from_source,
+            },
+        )["data"]
+
+    def buff_live_batch(
+        self,
+        live_url: str = "",
+        session_id: str = "",
+        target_views: int = 10,
+        concurrency: int = 5,
+        proxies: Optional[List[str]] = None,
+        cookies: Optional[List[str]] = None,
+        watch_seconds: int = 18,
+        simulate_wait: bool = False,
+        connect_ws: bool = True,
+        pull_stream: bool = True,
+        report_heartbeat: bool = True,
+        send_exit: bool = True,
+        send_like: bool = False,
+        like_count: int = 0,
+        bypass_stream_proxy: bool = False,
+        stream_lite_mode: bool = False,
+        stagger_ms: int = 0,
+        country: str = "VN",
+        from_source: str = "share",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "buff_live_batch",
+            {
+                "liveUrl": live_url,
+                "sessionId": str(session_id or ""),
+                "targetViews": target_views,
+                "concurrency": concurrency,
+                "proxies": proxies or [],
+                "cookies": cookies or [],
+                "watchSeconds": watch_seconds,
+                "simulateWait": simulate_wait,
+                "connectWs": connect_ws,
+                "pullStream": pull_stream,
+                "reportHeartbeat": report_heartbeat,
+                "sendExit": send_exit,
+                "sendLike": send_like,
+                "likeCount": like_count,
+                "bypassStreamProxy": bypass_stream_proxy,
+                "streamLiteMode": stream_lite_mode,
+                "staggerMs": stagger_ms,
+                "country": country,
+                "fromSource": from_source,
+            },
+        )["data"]
+
+    # --- Nhóm 6: Cổng Gọi Ký Mở Rộng Vạn Năng ---
     def execute_signed_request(
         self,
         url: str,

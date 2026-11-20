@@ -140,6 +140,11 @@ class MinSignClient {
   getVideoDetail(req) { return this.invoke("get_video_detail", req); }
   getChannelAndHashtagVideos(req) { return this.invoke("get_channel_and_hashtag_videos", req); }
 
+  // Buff View / Mắt Live Shopee
+  getLiveSessionDetail(req) { return this.invoke("get_live_session_detail", req); }
+  buffLiveView(req) { return this.invoke("buff_live_view", req); }
+  buffLiveBatch(req) { return this.invoke("buff_live_batch", req); }
+
   // Cổng Ký Vạn Năng
   executeSignedRequest(req) { return this.invoke("execute_signed_request", req); }
 }

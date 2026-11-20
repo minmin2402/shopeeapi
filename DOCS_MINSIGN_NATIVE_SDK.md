@@ -100,7 +100,10 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | | `MinSign_GetVideoDetail(json)` | `get_video_detail` | Lấy thông tin chi tiết 1 bài đăng Shopee Video (lượt xem hiện tại, tim, bình luận, tác giả, `mp4Url`, `viewToken`). |
 | | `MinSign_GetShopVideos(json)` | `get_shop_videos` | **[MỚI v1.1 — Chuyên Dụng Affiliate]** Lấy **danh sách toàn bộ Video của Shop** (`shopUrl` / `shopId` / `username` $\rightarrow$ tự động giải mã sang kênh Shopee Video `userId` + quét `/api/v2/timeline/me` hỗ trợ lật nhiều trang `maxPages`). Trả sẵn link `.mp4` CDN gốc không watermark (`mp4Url`), lượt xem/tim/comment và danh sách SP gắn giỏ vàng (`attachedProducts[]`)! |
 | | `MinSign_GetChannelAndHashtagVideos(json)` | `get_channel_and_hashtag_videos` | Quét danh sách toàn bộ video của 1 Kênh người dùng (`mode: "channel"`) hoặc theo Hashtag (`mode: "hashtag"`). |
-| **5. Cổng Ký Mở Rộng** | `MinSign_ExecuteSignedRequest(json)` | `execute_signed_request` | **Hàm vạn năng**: Cho phép coder truyền bất kỳ URL API Shopee GET/POST nào — SDK tự gắn máy cố định của Acc, tự xin chữ ký Server và tự bắn qua Proxy bằng `uTLS` Android! |
+| **5. Buff View / Mắt Shopee Live** | `MinSign_GetLiveSessionDetail(json)` | `get_live_session_detail` | **[MỚI v1.4]** Giải link Shopee Live (`live.shopee.*` / `shp.ee`) hoặc `sessionId` $\rightarrow$ ký & gọi `joinv2` + `play_url_list` trả `roomId`, `viewerCount`, `memberCnt`, `usersig`, `playUrls`. |
+| | `MinSign_BuffLiveView(json)` | `buff_live_view` | **[MỚI v1.4]** Thực thi 1 phiên xem Live trọn vẹn: `joinv2` $\rightarrow$ kéo FLV/HLS stream $\rightarrow$ WebSocket `wss://live-ws.<dom>/im/v1/comet` gửi Wire Protobuf `HB_REQ` (`type=1000`) $\rightarrow$ `SZTracker` `reportPB` (`10002`/`10003`/`10007`) $\rightarrow$ `like`/`exit`. |
+| | `MinSign_BuffLiveBatch(json)` | `buff_live_batch` | **[MỚI v1.4]** Goroutine Worker Pool đa luồng xoay vòng `proxies[]` & `cookies[]` đẩy đồng thời nhiều lượt xem / giữ mắt CCU Live. |
+| **6. Cổng Ký Mở Rộng** | `MinSign_ExecuteSignedRequest(json)` | `execute_signed_request` | **Hàm vạn năng**: Cho phép coder truyền bất kỳ URL API Shopee GET/POST nào — SDK tự gắn máy cố định của Acc, tự xin chữ ký Server và tự bắn qua Proxy bằng `uTLS` Android! |
 
 ---
 
@@ -583,6 +586,14 @@ Chỉ cần truyền **Cookie tài khoản Shopee còn sống (có `SPC_ST`)** k
   "totalLatencyMs": 1120
 }
 ```
+
+---
+
+## 9. Điều Khoản Sử Dụng & Tuyên Bố Miễn Trừ Trách Nhiệm Pháp Lý (Disclaimer)
+
+- Toàn bộ SDK (`minsign_sdk.dll`), mã nguồn Wrapper và API Cloud được cung cấp trên nguyên tắc **"AS-IS"** phục vụ mục đích nghiên cứu giao thức, kiểm thử Sandbox và tự động hóa hợp pháp.
+- Người sử dụng chịu trách nhiệm **100% trước pháp luật và điều khoản bên thứ ba** đối với mọi hành vi sử dụng, dữ liệu đầu vào (`cookie`, `proxy`, URL mục tiêu) và kết quả phát sinh. Bên phát triển **miễn trừ hoàn toàn trách nhiệm liên đới** đối với mọi thiệt hại hoặc xử phạt từ bên thứ ba.
+- Xem toàn văn bản thỏa thuận ràng buộc tại [**`TERMS_OF_SERVICE.md`**](./TERMS_OF_SERVICE.md).
 
 ---
 

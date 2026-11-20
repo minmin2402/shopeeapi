@@ -1,6 +1,6 @@
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.3.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v1.4.0)
 
-[![Version](https://img.shields.io/badge/Release-v1.3.0%20(26%20APIs)-8B5CF6?style=for-the-badge)](https://github.com/minmin2402/shopeeapi/releases)
+[![Version](https://img.shields.io/badge/Release-v1.4.0%20(29%20APIs)-8B5CF6?style=for-the-badge)](https://github.com/minmin2402/shopeeapi/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64%20(C--ABI%20DLL)-2563EB?style=for-the-badge)](#)
 [![Shopee Regions](https://img.shields.io/badge/Regions-VN%20%7C%20TW%20%7C%20PH%20%7C%20MY%20%7C%20TH%20%7C%20ID%20%7C%20SG%20%7C%20BR-EE4D2D?style=for-the-badge)](#)
 [![Languages](https://img.shields.io/badge/Wrappers-C%23%20%7C%20Python%20%7C%20Node.js%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Delphi-10B981?style=for-the-badge)](#)
@@ -8,6 +8,9 @@
 
 **Bộ thư viện nhân gốc đa ngôn ngữ (`minsign_sdk.dll` — Chuẩn C-ABI quốc tế)** giúp lập trình viên tích hợp toàn bộ nghiệp vụ Shopee & Shopee Affiliate tốc độ cao vào bất kỳ phần mềm nào (`C# .NET`, `Python`, `Node.js / Electron`, `C/C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`...) chỉ với **1 file DLL duy nhất**:
 
+- **[MỚI v1.4.0 — Buff View / Kéo Mắt Shopee Live Đa Luồng (`GetLiveSessionDetail`, `BuffLiveView` & `BuffLiveBatch`)]:**
+  - Tự động giải link Shopee Live (`live.shopee.*/...`, `shp.ee/...`), ký Aegis (`X-Livestreaming-Auth`) + MinSign gọi `POST /api/v1/session/{id}/joinv2` & `play_url_list`.
+  - Tích hợp sẵn **WebSocket RFC 6455 qua Proxy + uTLS Android (`wss://live-ws.<dom>/im/v1/comet`)** bắn Wire Protobuf `HB_REQ` (và tự động phản hồi `CONF_REQ`/`PUSH_REQ`), kéo luồng FLV/HLS từ CDN, gửi `SZTracker` `reportPB` (`StreamStart` 10002 / `StreamFirstFrame` 10003 / `StreamHeartbeat` 10007), tuỳ chọn thả tim (`/like`) và thoát phòng sạch sẽ (`/exit`).
 - **[MỚI v1.3.0 — Tìm Kiếm Sản Phẩm Bằng Hình Ảnh & AI Crop Vật Thể (`SearchProductsByImage` & `GetImageBoundingBox`)]:**
   - **API Tìm Sản Phẩm Tương Tự / Giá Rẻ Hơn Bằng Hình Ảnh Thuần HTTP (`search_products_by_image`)** — Hỗ trợ 5 nguồn ảnh linh hoạt (file `.jpg/.png/.webp/.gif/.bmp` tự động chuyển JPEG trong RAM, chuỗi `imageBase64` dán từ Clipboard `Ctrl+V`, link ảnh ngoài TikTok/1688/Taobao/Web, link ảnh CDN Shopee 0ms upload, hoặc link sản phẩm Shopee), chọn chế độ `SimilarProducts` hoặc `CheaperOptions`, không cần mở trình duyệt hay giả lập!
   - **API Nhận Diện Vùng Vật Thể AI (`get_image_bounding_box`)** — Trả về danh sách toạ độ `left,top,width,height` của các món đồ trong ảnh chụp toàn cảnh (`0` Cookie, `0` lượt ký).
@@ -200,7 +203,7 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 
 ---
 
-## Bảng Tổng Hợp 26 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll` (`v1.3.0`)
+## Bảng Tổng Hợp 29 Hàm Tích Hợp Sẵn Trong `minsign_sdk.dll` (`v1.4.0`)
 
 | Nhóm Chức Năng | Tên `action` (`MinSign_Invoke`) | Mô Tả Ngắn | Cần Cookie? |
 |---|---|---|---|
@@ -230,7 +233,10 @@ const { MinSignClient } = require("./wrappers/nodejs/minsign_sdk");
 | | `get_video_detail` | Lấy thống kê chi tiết 1 video Shopee (lượt xem, tim, bình luận, `mp4Url`) | Tuỳ chọn |
 | | **`get_shop_videos`** | **[MỚI v1.1 — Affiliate]** Quét toàn bộ danh sách Video của Shop (tự động giải mã `Shop -> userId`, hỗ trợ lật nhiều trang `maxPages`, trả `mp4Url` gốc không logo & `attachedProducts[]`) | Khuyên truyền Cookie nick phụ |
 | | `get_channel_and_hashtag_videos` | Quét danh sách video theo Kênh người dùng hoặc theo Hashtag | Tuỳ chọn |
-| **5. Cổng Ký Mở Rộng** | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |
+| **5. Buff View / Mắt Shopee Live** | **`get_live_session_detail`** | **[MỚI v1.4]** Giải link Live / `sessionId`, lấy `roomId`, `memberCnt`, `viewerCount`, `usersig`, `playUrls` | Tuỳ chọn |
+| | **`buff_live_view`** | **[MỚI v1.4]** Đẩy 1 lượt xem/mắt Live (`joinv2` $\rightarrow$ pull FLV/M3U8 $\rightarrow$ WS `/im/v1/comet` `HB_REQ` $\rightarrow$ `reportPB` $\rightarrow$ `exit`) | Không (hoặc kèm Cookie) |
+| | **`buff_live_batch`** | **[MỚI v1.4]** Chạy Worker Pool đa luồng trong DLL xoay vòng `proxies[]` & `cookies[]` đẩy hàng loạt mắt/view Live | Không (hoặc kèm Cookie) |
+| **6. Cổng Ký Mở Rộng** | `execute_signed_request` | Cổng vạn năng: truyền bất kỳ URL API Shopee GET/POST nào, SDK tự ký & bắn qua `uTLS` + Proxy | Tuỳ chọn |
 
 ---
 
@@ -598,5 +604,21 @@ int main() {
 ## Liên Hệ & Hỗ Trợ Kỹ Thuật
 
 - **Website Đăng Ký & Lấy `X-API-Key` Tự Động:** [https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)
+- **Điều Khoản Sử Dụng & Miễn Trừ Trách Nhiệm Pháp Lý:** [`TERMS_OF_SERVICE.md`](./TERMS_OF_SERVICE.md)
 - **Cẩm Nang Riêng Tìm Kiếm Bằng Hình Ảnh:** [`DOCS_TIM_SAN_PHAM_BANG_ANH.md`](./DOCS_TIM_SAN_PHAM_BANG_ANH.md)
-- **Tài Liệu Chi Tiết Đầy Đủ 26 Hàm SDK:** [`DOCS_MINSIGN_NATIVE_SDK.md`](./DOCS_MINSIGN_NATIVE_SDK.md)
+- **Tài Liệu Chi Tiết Đầy Đủ 29 Hàm SDK:** [`DOCS_MINSIGN_NATIVE_SDK.md`](./DOCS_MINSIGN_NATIVE_SDK.md)
+
+---
+
+## Tuyên Bố Miễn Trừ Trách Nhiệm Pháp Lý (Disclaimer)
+
+> **QUAN TRỌNG:** Toàn bộ mã nguồn, nhị phân `minsign_sdk.dll`, các wrapper và dịch vụ ký chỉ được cung cấp theo nguyên trạng (**AS-IS**) cho mục đích nghiên cứu kỹ thuật, kiểm thử sandbox và tự động hóa hợp pháp. **Người sử dụng tự chịu trách nhiệm 100%** trước pháp luật và điều khoản của nền tảng bên thứ ba (Shopee/nền tảng liên quan) đối với mọi hành vi triển khai, cookie, proxy và lưu lượng gọi API; tác giả & nhà cung cấp **miễn trừ toàn bộ trách nhiệm liên đới** đối với mọi tổn thất trực tiếp/gián tiếp, khóa tài khoản hoặc tranh chấp phát sinh. Nạp số dư ví/API là dịch vụ số **không hoàn tiền**. Xem đầy đủ tại [**`TERMS_OF_SERVICE.md`**](./TERMS_OF_SERVICE.md).
+
+---
+
+## ⚖️ Điều Khoản Dịch Vụ & Tuyên Bố Miễn Trừ Trách Nhiệm (Disclaimer)
+
+1. **Mục đích học thuật & Nghiên cứu:** Bộ SDK này (`minsign_sdk.dll`, mã nguồn wrappers và API liên quan) được cung cấp hoàn toàn cho mục đích nghiên cứu công nghệ, thử nghiệm sandbox nội bộ và phân tích dữ liệu hợp pháp.
+2. **Trách nhiệm người dùng:** Người sử dụng tự chịu 100% trách nhiệm về tính pháp lý và việc tuân thủ pháp luật sở tại cũng như Điều khoản Dịch vụ của bên thứ ba khi sử dụng SDK. Nghiêm cấm dùng SDK vào các hành vi tấn công mạng, spam, phá hoại hoặc xâm phạm quyền riêng tư.
+3. **Miễn trừ trách nhiệm:** Tác giả và bên phát triển phần mềm được miễn trừ hoàn toàn khỏi mọi khiếu nại, tranh chấp, thiệt hại trực tiếp/gián tiếp hay bất kỳ rủi ro tài khoản nào phát sinh từ việc sử dụng SDK của người dùng.
+4. **Chi tiết văn bản pháp lý:** Xem toàn văn tại [**`TERMS_OF_SERVICE.md`**](./TERMS_OF_SERVICE.md). Bằng việc tích hợp hoặc phân phối lại SDK, bạn xác nhận đã đọc, hiểu và đồng ý vô điều kiện với toàn bộ các điều khoản trên.

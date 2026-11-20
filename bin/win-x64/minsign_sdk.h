@@ -116,6 +116,9 @@ extern char* MinSign_BuffVideoBatch(cchar_t* reqJson);
 extern char* MinSign_GetVideoDetail(cchar_t* reqJson);
 extern char* MinSign_GetShopVideos(cchar_t* reqJson);
 extern char* MinSign_GetChannelAndHashtagVideos(cchar_t* reqJson);
+extern char* MinSign_GetLiveSessionDetail(cchar_t* reqJson);
+extern char* MinSign_BuffLiveView(cchar_t* reqJson);
+extern char* MinSign_BuffLiveBatch(cchar_t* reqJson);
 extern char* MinSign_ExecuteSignedRequest(cchar_t* reqJson);
 extern char* MinSign_Invoke(cchar_t* action, cchar_t* reqJson);
 
