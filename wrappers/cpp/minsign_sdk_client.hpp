@@ -80,6 +80,9 @@ public:
     std::string getImageBoundingBox(const std::string& reqJson) const { return invoke("get_image_bounding_box", reqJson); }
     std::string uploadShopeeVideo(const std::string& reqJson) const { return invoke("upload_shopee_video", reqJson); }
     std::string precheckVideoUpload(const std::string& reqJson) const { return invoke("precheck_video_upload", reqJson); }
+    std::string getAffiliateProducts(const std::string& reqJson) const { return invoke("get_affiliate_products", reqJson); }
+    std::string convertAffiliateLink(const std::string& reqJson) const { return invoke("convert_affiliate_link", reqJson); }
+    std::string batchConvertAffiliateLinks(const std::string& reqJson) const { return invoke("batch_convert_affiliate_links", reqJson); }
     std::string mutateMp4Fingerprint(const std::string& reqJson) const { return invoke("mutate_mp4_fingerprint", reqJson); }
     std::string buffVideoView(const std::string& reqJson) const { return invoke("buff_video_view", reqJson); }
     std::string buffVideoBatch(const std::string& reqJson) const { return invoke("buff_video_batch", reqJson); }

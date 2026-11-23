@@ -132,6 +132,8 @@ class MinSignClient {
   uploadShopeeVideo(req) { return this.invoke("upload_shopee_video", req); }
   precheckVideoUpload(req) { return this.invoke("precheck_video_upload", req); }
   getAffiliateProducts(req) { return this.invoke("get_affiliate_products", req); }
+  convertAffiliateLink(req) { return this.invoke("convert_affiliate_link", req); }
+  batchConvertAffiliateLinks(req) { return this.invoke("batch_convert_affiliate_links", req); }
   mutateMp4Fingerprint(req) { return this.invoke("mutate_mp4_fingerprint", req); }
 
   // Buff View Shopee Video & Kênh Video

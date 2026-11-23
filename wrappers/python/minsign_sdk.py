@@ -463,6 +463,88 @@ class MinSignClient:
     def get_channel_and_hashtag_videos(self, mode: str = "channel", request_user_id: str = "", hashtag_id: str = "", limit: int = 20, proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
         return self.invoke("get_channel_and_hashtag_videos", {"mode": mode, "requestUserId": request_user_id, "hashtagId": hashtag_id, "limit": limit, "proxy": proxy, "cookie": cookie, "country": country})["data"]
 
+    def convert_affiliate_link(
+        self,
+        url: str,
+        cookie: str,
+        sub_id1: str = "",
+        sub_id2: str = "",
+        sub_id3: str = "",
+        sub_id4: str = "",
+        sub_id5: str = "",
+        sub_ids: Optional[List[str]] = None,
+        country: str = "",
+        proxy: str = "",
+        clean_product_url: bool = False,
+        resolve_short_links: bool = True,
+        sign_request: bool = True,
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "convert_affiliate_link",
+            {
+                "url": url,
+                "cookie": cookie,
+                "subId1": sub_id1,
+                "subId2": sub_id2,
+                "subId3": sub_id3,
+                "subId4": sub_id4,
+                "subId5": sub_id5,
+                "subIds": sub_ids or [],
+                "country": country,
+                "proxy": proxy,
+                "cleanProductUrl": clean_product_url,
+                "resolveShortLinks": resolve_short_links,
+                "signRequest": sign_request,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def batch_convert_affiliate_links(
+        self,
+        cookie: str,
+        urls: Optional[List[str]] = None,
+        items: Optional[List[Dict[str, Any]]] = None,
+        sub_id1: str = "",
+        sub_id2: str = "",
+        sub_id3: str = "",
+        sub_id4: str = "",
+        sub_id5: str = "",
+        sub_ids: Optional[List[str]] = None,
+        country: str = "",
+        proxy: str = "",
+        clean_product_url: bool = False,
+        resolve_short_links: bool = True,
+        sign_request: bool = True,
+        batch_size: int = 20,
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        return self.invoke(
+            "batch_convert_affiliate_links",
+            {
+                "cookie": cookie,
+                "urls": urls or [],
+                "items": items or [],
+                "subId1": sub_id1,
+                "subId2": sub_id2,
+                "subId3": sub_id3,
+                "subId4": sub_id4,
+                "subId5": sub_id5,
+                "subIds": sub_ids or [],
+                "country": country,
+                "proxy": proxy,
+                "cleanProductUrl": clean_product_url,
+                "resolveShortLinks": resolve_short_links,
+                "signRequest": sign_request,
+                "batchSize": batch_size,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
     # --- Nhóm 5: Buff View / Mắt Live Shopee ---
     def get_live_session_detail(
         self,

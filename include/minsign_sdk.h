@@ -110,6 +110,8 @@ extern char* MinSign_GetCategoryTree(cchar_t* reqJson);
 extern char* MinSign_UploadShopeeVideo(cchar_t* reqJson);
 extern char* MinSign_PrecheckVideoUpload(cchar_t* reqJson);
 extern char* MinSign_GetAffiliateProducts(cchar_t* reqJson);
+extern char* MinSign_ConvertAffiliateLink(cchar_t* reqJson);
+extern char* MinSign_BatchConvertAffiliateLinks(cchar_t* reqJson);
 extern char* MinSign_MutateMp4Fingerprint(cchar_t* reqJson);
 extern char* MinSign_BuffVideoView(cchar_t* reqJson);
 extern char* MinSign_BuffVideoBatch(cchar_t* reqJson);

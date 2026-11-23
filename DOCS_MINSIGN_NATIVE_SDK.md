@@ -1,6 +1,6 @@
-# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.2.0)
+# Tài Liệu Tích Hợp Bộ Thư Viện Gốc Đa Ngôn Ngữ — MinSign Native Universal SDK (`minsign_sdk.dll` v1.5.0)
 
-**Phiên bản:** `1.2.0` (Windows x64 Native Shared Library — C-ABI Standard · **24 Hàm Dựng Sẵn**)  
+**Phiên bản:** `1.5.0` (Windows x64 Native Shared Library — C-ABI Standard · **31 Hàm Dựng Sẵn**)  
 **Máy chủ Ký Bảo Mật Mặc Định:** `https://vip-sign.minmintool.site` (Yêu cầu mã `X-API-Key`)  
 **Hỗ trợ 8 Thị trường Shopee:** `VN`, `TW`, `PH`, `MY`, `TH`, `ID`, `SG`, `BR`  
 **Ngôn ngữ tương thích 100%:** `C# (.NET Framework / .NET 6-9)`, `Python`, `Node.js / Electron`, `C / C++`, `Delphi`, `AutoIt`, `PHP FFI`, `Rust`, `Java JNA`, `Go`...
@@ -94,6 +94,8 @@ Tất cả các hàm đều có thể gọi trực tiếp qua hàm C-ABI riêng 
 | **3. Đăng Video Shopee & Affiliate** | `MinSign_UploadShopeeVideo(json)` | `upload_shopee_video` | **Pipeline 4 bước Pure API đăng Shopee Video hoàn chỉnh**: Tự đổi vân tay MP4 tạm $\rightarrow$ `vod/preupload` $\rightarrow$ giải mã AES-128-CBC VOD Token & đẩy file MP4 lên CDN (`WCS-Android-SDK`) $\rightarrow$ `vod/reportupload` $\rightarrow$ ký `biz/post/precheck` & `biz/post/create` (hỗ trợ gắn tối đa **6 link/sản phẩm Affiliate** vào giỏ hàng vàng + chế độ `normal` hoặc `duet`). |
 | | `MinSign_PrecheckVideoUpload(json)` | `precheck_video_upload` | Kiểm tra nhanh Cookie tài khoản còn sống và có quyền đăng Shopee Video hay không. |
 | | `MinSign_GetAffiliateProducts(json)` | `get_affiliate_products` | Truy vấn danh sách sản phẩm gợi ý gắn giỏ hàng Affiliate (`affiliate.shopee.*/api/v3/offer/product/list`). |
+| | `MinSign_ConvertAffiliateLink(json)` | `convert_affiliate_link` | **[MỚI v1.5]** Chuyển đổi **1 link sản phẩm** hoặc **link đã gắn sẵn `aff_id` / `universal-link`** sang **link rút gọn `s.shopee.*`** gắn đúng Cookie nick Affiliate (hỗ trợ `subId1..subId5`, tự detect quốc gia, tự ký chống `90309999`). |
+| | `MinSign_BatchConvertAffiliateLinks(json)` | `batch_convert_affiliate_links` | **[MỚI v1.5]** Đổi **hàng loạt nhiều link** sang link rút gọn Affiliate trong 1 lần gọi (tự động chia chunk 20–50 link/GQL request qua `batchCustomLink`, hỗ trợ `subId1..5` riêng cho từng link). |
 | | `MinSign_MutateMp4Fingerprint(json)` | `mutate_mp4_fingerprint` | Biến đổi nhị phân file `.mp4` (`mvhd`/`tkhd`/`mdhd` timestamps + chèn atom `free` ngẫu nhiên) giúp đổi mới 100% mã băm `MD5` & `SHA-256` trong `< 10ms` mà không cần render lại bằng FFmpeg. |
 | **4. Buff View & Kênh Shopee Video** | `MinSign_BuffVideoView(json)` | `buff_video_view` | Thực thi chuẩn **4 bước đẩy 1 lượt xem Shopee Video hợp lệ**: Giải link `shp.ee` $\rightarrow$ Ký & mở `timeline/single` lấy `view_token` $\rightarrow$ Đọc luồng byte MP4 thật (`Range: bytes=0-65535`) qua Proxy $\rightarrow$ Ký & bắn gói sự kiện `video_impression` + `video_play` + `video_play_time` lên `c-api-bit`. |
 | | `MinSign_BuffVideoBatch(json)` | `buff_video_batch` | Khởi chạy **Goroutine Worker Pool đa luồng ngay trong DLL** để đẩy `targetViews` lượt xem song song với danh sách `proxies[]` và `cookies[]` xoay vòng tự động. |
@@ -585,6 +587,40 @@ Chỉ cần truyền **Cookie tài khoản Shopee còn sống (có `SPC_ST`)** k
   "signCostMs": 38,
   "totalLatencyMs": 1120
 }
+```
+
+---
+
+## 4.3. Đặc Tả Chi Tiết API Chuyển Đổi & Rút Gọn Link Affiliate (`v1.5.0`)
+
+Sử dụng Cookie của chính tài khoản Shopee Affiliate để gọi GraphQL `https://affiliate.shopee.*/api/v3/gql?q=batchCustomLink` (có tự ký chống `90309999` và tự động giải link ngắn cũ nếu cần).
+
+### A. Đổi 1 Link (`convert_affiliate_link`)
+```python
+res = sdk.convert_affiliate_link(
+    url="https://shopee.vn/product/88201679/24459402585",  # Hoặc link đã gắn aff_id / shp.ee / shopee.co.th
+    cookie="SPC_U=...; SPC_EC=...; csrftoken=...",
+    sub_id1="fb_reels",
+    sub_id2="campaign_01",
+    clean_product_url=True,   # Chuẩn hóa link SP về /product/{shop}/{item} trước khi đổi
+    proxy="ip:port:user:pass",
+)
+print(res["shortLink"], res["longLink"])
+```
+
+### B. Đổi Hàng Loạt (`batch_convert_affiliate_links`)
+```python
+batch = sdk.batch_convert_affiliate_links(
+    cookie="SPC_U=...; SPC_EC=...; csrftoken=...",
+    items=[
+        {"url": "https://shopee.vn/San-Pham-1-i.111.222", "subId1": "vid_01"},
+        {"url": "https://shopee.co.th/universal-link/product/333/444?aff_id=1730001", "subId1": "vid_02"},
+    ],
+    batch_size=20,
+    proxy="ip:port:user:pass",
+)
+for row in batch["results"]:
+    print(row["inputUrl"], "=>", row["shortLink"])
 ```
 
 ---

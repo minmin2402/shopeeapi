@@ -123,6 +123,8 @@ namespace MinSign
         public JsonElement UploadShopeeVideo(object request) => Invoke("upload_shopee_video", request);
         public JsonElement PrecheckVideoUpload(object request) => Invoke("precheck_video_upload", request);
         public JsonElement GetAffiliateProducts(object request) => Invoke("get_affiliate_products", request);
+        public JsonElement ConvertAffiliateLink(object request) => Invoke("convert_affiliate_link", request);
+        public JsonElement BatchConvertAffiliateLinks(object request) => Invoke("batch_convert_affiliate_links", request);
         public JsonElement MutateMp4Fingerprint(object request) => Invoke("mutate_mp4_fingerprint", request);
 
         // Nhóm Buff View Shopee Video & Kênh Video
