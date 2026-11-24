@@ -1,7 +1,7 @@
 /**
- * Quickstart Node.js / Electron — ShopeeAPI Native Universal SDK (minsign_sdk.dll)
- * Cài đặt 1 lần: npm install koffi
- * Đăng ký & lấy mã X-API-Key tại: https://vip-sign.minmintool.site
+ * Quickstart Node.js / Electron — MinSign Native Universal SDK v2.0.0 (minsign_sdk.dll)
+ * Install once: npm install koffi
+ * Register & obtain your X-API-Key at: https://vip-sign.minmintool.site
  */
 "use strict";
 
@@ -10,7 +10,7 @@ const { MinSignClient } = require("../wrappers/nodejs/minsign_sdk");
 async function main() {
   const apiKey = process.env.MINSIGN_API_KEY || "YOUR_X_API_KEY_HERE";
   if (apiKey === "YOUR_X_API_KEY_HERE") {
-    console.log("[!] Hãy thay 'YOUR_X_API_KEY_HERE' bằng mã X-API-Key lấy tại https://vip-sign.minmintool.site");
+    console.log("[!] Replace 'YOUR_X_API_KEY_HERE' with your X-API-Key from https://vip-sign.minmintool.site");
     return;
   }
 
@@ -21,36 +21,41 @@ async function main() {
     defaultCountry: "VN",
   });
 
-  console.log("1. Phiên bản SDK:", sdk.version());
-  console.log("2. Thông tin hạn mức X-API-Key:", await sdk.checkApiKey());
+  console.log("1. SDK Version:", sdk.version());
+  console.log("2. API Key Quota:", await sdk.checkApiKey());
 
+  // [v2.0.0] Resolve any Shopee URL across all 8 regions
+  const sampleUrl = "https://shopee.vn/V%E1%BB%A3t-pickleball-Perseus-4-b%E1%BB%81-m%E1%BA%B7t-carbon-(NFC)-i.1023922469.25294038727";
+  const resolved = await sdk.resolveShopeeUrl({ url: sampleUrl });
+  console.log("3. Resolved URL:", resolved.country, resolved.shopId, resolved.itemId);
+
+  // Fetch product detail (no cookie required)
   const detail = await sdk.getProductDetail({
-    productUrl: "https://shopee.vn/V%E1%BB%A3t-pickleball-Perseus-4-b%E1%BB%81-m%E1%BA%B7t-carbon-(NFC)-i.1023922469.25294038727",
+    productUrl: sampleUrl,
     country: "VN",
   });
+  console.log("4. Product Name:", detail.product?.name);
+  console.log("   Price (VND) :", detail.product?.priceVnd);
+  console.log("   Variations  :", (detail.product?.models || []).length);
 
-  console.log("3. Tên sản phẩm:", detail.product?.name);
-  console.log("   Giá bán (VNĐ):", detail.product?.priceVnd);
-  console.log("   Số phân loại :", (detail.product?.models || []).length);
-
-  // [MỚI v1.1.0 - AFFILIATE] Lấy danh sách SP mới nhất của Shop theo thời gian thực
+  // Fetch newest products of a shop
   const newest = await sdk.getShopNewestProducts({
     shopId: "1023922469",
     limit: 10,
-    sinceItemId: "", // Truyền latestItemId lần quét trước để canh SP mới vừa lên kệ
+    sinceItemId: "", // Pass previous latestItemId to monitor newly listed items
     country: "VN",
   });
-  console.log("4. SP mới nhất của Shop -> count:", newest.count, "| latestItemId:", newest.latestItemId);
+  console.log("5. Shop Newest Products -> count:", newest.count, "| latestItemId:", newest.latestItemId);
 
-  // [MỚI v1.1.0 - AFFILIATE] Lấy danh sách Video của Shop (tự động giải mã Shop -> Creator userId)
+  // Fetch shop videos (automatically resolves shop username -> creator userId)
   const vids = await sdk.getShopVideos({
     username: "lovito.vn",
     limit: 20,
     maxPages: 1,
-    cookie: "", // Truyền Cookie Shopee còn sống để tải full danh sách video + mp4Url gốc không logo
+    cookie: "", // Pass an active Shopee cookie to fetch full video timeline + watermark-free MP4 URLs
     country: "VN",
   });
-  console.log("5. Kênh Shopee Video Shop -> userId:", vids.userId, "| videos:", vids.count);
+  console.log("6. Shop Video Channel -> userId:", vids.userId, "| videos:", vids.count);
 }
 
 main().catch(console.error);

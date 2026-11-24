@@ -1,7 +1,11 @@
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
+
+# Java
+*.class
 
 # Node.js
 node_modules/

@@ -1,23 +1,45 @@
 """
-Official Python Wrapper cho MinSign Native Universal SDK (minsign_sdk.dll / libminsign_sdk.so)
-Không cần cài thêm bất kỳ thư viện ngoài nào (sử dụng ctypes chuẩn của Python).
-Tự động giải phóng con trỏ C-ABI qua MinSign_Free(ptr) an toàn tuyệt đối.
+Official Python Wrapper for MinSign Native Universal SDK v2.0.0 (minsign_sdk.dll / libminsign_sdk.so).
+
+Zero external dependencies (uses Python's standard library ctypes).
+Automatically frees every C-ABI heap pointer via MinSign_Free(ptr) to guarantee zero memory leaks.
+Supports all 44 production APIs across 8 Shopee regions (VN, ID, TH, MY, PH, SG, TW, BR)
+with dual App Mobile + Web Chrome signing modes.
 """
 from __future__ import annotations
 
 import ctypes
 import json
-import os
 import platform
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+
+CookieInput = Union[str, Dict[str, Any], List[Any]]
 
 
 class MinSignError(RuntimeError):
-    pass
+    """Raised when minsign_sdk.dll returns an error response or null pointer."""
 
 
 class MinSignClient:
+    """Thread-safe Python client wrapping MinSign Native Universal SDK v2.0.0."""
+
+    _V2_EXPORT_SYMBOLS = (
+        "MinSign_SignWeb",
+        "MinSign_ResolveShopeeUrl",
+        "MinSign_BatchGetProductDetails",
+        "MinSign_GetProductRatings",
+        "MinSign_GetFlashSaleItems",
+        "MinSign_GetRecommendProducts",
+        "MinSign_GetSearchSuggestions",
+        "MinSign_GetAccountProfile",
+        "MinSign_GetCartSummary",
+        "MinSign_ClaimShopVoucher",
+        "MinSign_GetAffiliateOfferList",
+        "MinSign_GetAffiliateCommissionReport",
+        "MinSign_GetLiveBagItems",
+    )
+
     def __init__(
         self,
         api_key: str,
@@ -28,13 +50,14 @@ class MinSignClient:
         default_country: str = "VN",
         timeout_ms: int = 25000,
     ) -> None:
+        """Initialize the native SDK library and configure the signer + local device vault."""
         if not api_key or not api_key.strip():
-            raise ValueError("Bắt buộc truyền mã X-API-Key (api_key).")
+            raise ValueError("api_key (X-API-Key) is required.")
 
         resolved_dll = self._resolve_dll_path(dll_path)
         self._lib = ctypes.CDLL(str(resolved_dll))
 
-        # Khai báo chữ ký hàm C-ABI (dùng c_void_p để giữ nguyên địa chỉ vùng nhớ truyền vào MinSign_Free)
+        # Core C-ABI signatures (use c_void_p for return values so exact pointers are passed to MinSign_Free)
         self._lib.MinSign_Version.argtypes = []
         self._lib.MinSign_Version.restype = ctypes.c_void_p
 
@@ -55,6 +78,15 @@ class MinSignClient:
 
         self._lib.MinSign_Free.argtypes = [ctypes.c_void_p]
         self._lib.MinSign_Free.restype = None
+
+        # Bind all 13 v2.0.0 C-ABI exports (gracefully optional if loaded against an older DLL)
+        self._exports: Dict[str, Any] = {}
+        for symbol in self._V2_EXPORT_SYMBOLS:
+            fn = getattr(self._lib, symbol, None)
+            if fn is not None:
+                fn.argtypes = [ctypes.c_char_p]
+                fn.restype = ctypes.c_void_p
+                self._exports[symbol] = fn
 
         self.init_info = self._consume_ptr(
             self._lib.MinSign_Init(
@@ -77,7 +109,7 @@ class MinSignClient:
             p = Path(custom_path).resolve()
             if p.exists():
                 return p
-            raise FileNotFoundError(f"Không tìm thấy thư viện Native SDK tại: {p}")
+            raise FileNotFoundError(f"Native SDK library not found at: {p}")
 
         lib_name = "minsign_sdk.dll" if platform.system() == "Windows" else "libminsign_sdk.so"
         here = Path(__file__).resolve().parent
@@ -93,12 +125,24 @@ class MinSignClient:
             if cand.exists():
                 return cand
         raise FileNotFoundError(
-            f"Không tìm thấy {lib_name}. Hãy đặt {lib_name} cùng thư mục hoặc truyền dll_path=..."
+            f"Could not locate {lib_name}. Place it next to your script or pass dll_path=..."
         )
+
+    @staticmethod
+    def _normalize_payload(payload: Optional[Dict[str, Any]]) -> bytes:
+        req = dict(payload or {})
+        if isinstance(req.get("cookie"), (dict, list)):
+            req["cookie"] = json.dumps(req["cookie"], ensure_ascii=False)
+        if isinstance(req.get("cookies"), list):
+            req["cookies"] = [
+                json.dumps(c, ensure_ascii=False) if isinstance(c, (dict, list)) else str(c)
+                for c in req["cookies"]
+            ]
+        return json.dumps(req, ensure_ascii=False).encode("utf-8")
 
     def _consume_ptr(self, ptr: Optional[int], raise_on_error: bool = True) -> Dict[str, Any]:
         if not ptr:
-            raise MinSignError("minsign_sdk.dll trả về con trỏ NULL.")
+            raise MinSignError("minsign_sdk.dll returned a NULL pointer.")
         try:
             raw_bytes = ctypes.string_at(ptr)
             parsed: Dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
@@ -109,33 +153,62 @@ class MinSignClient:
             raise MinSignError(parsed.get("error") or json.dumps(parsed, ensure_ascii=False))
         return parsed
 
-    def invoke(self, action: str, payload: Optional[Dict[str, Any]] = None, raise_on_error: bool = True) -> Dict[str, Any]:
-        req = dict(payload or {})
-        if isinstance(req.get("cookie"), (dict, list)):
-            req["cookie"] = json.dumps(req["cookie"], ensure_ascii=False)
-        if isinstance(req.get("cookies"), list):
-            req["cookies"] = [
-                json.dumps(c, ensure_ascii=False) if isinstance(c, (dict, list)) else str(c)
-                for c in req["cookies"]
-            ]
-        body = json.dumps(req, ensure_ascii=False).encode("utf-8")
+    def _call_export(
+        self,
+        symbol: str,
+        action: str,
+        payload: Optional[Dict[str, Any]] = None,
+        raise_on_error: bool = True,
+    ) -> Dict[str, Any]:
+        body = self._normalize_payload(payload)
+        fn = self._exports.get(symbol)
+        if fn is not None:
+            return self._consume_ptr(fn(body), raise_on_error=raise_on_error)
         ptr = self._lib.MinSign_Invoke(action.encode("utf-8"), body)
         return self._consume_ptr(ptr, raise_on_error=raise_on_error)
 
-    # --- Nhóm 1: Quản trị Key & Thiết bị cố định theo Acc ---
+    def invoke(
+        self,
+        action: str,
+        payload: Optional[Dict[str, Any]] = None,
+        raise_on_error: bool = True,
+    ) -> Dict[str, Any]:
+        """Invoke any SDK action by its snake_case action name via MinSign_Invoke."""
+        body = self._normalize_payload(payload)
+        ptr = self._lib.MinSign_Invoke(action.encode("utf-8"), body)
+        return self._consume_ptr(ptr, raise_on_error=raise_on_error)
+
+    # =========================================================================
+    # Group 1: Key Management, Local Device Vault & Core Signing (App + Web)
+    # =========================================================================
+
     def version(self) -> Dict[str, Any]:
+        """Return SDK version and build metadata."""
         return self._consume_ptr(self._lib.MinSign_Version())["data"]
 
     def check_api_key(self) -> Dict[str, Any]:
+        """Check API key validity, plan tier, and remaining quota."""
         return self._consume_ptr(self._lib.MinSign_CheckApiKey())["data"]
 
-    def bind_account_device(self, cookie: str = "", account_id: str = "", country: str = "VN", device_id: str = "") -> Dict[str, Any]:
-        return self.invoke("bind_account_device", {"cookie": cookie, "accountId": account_id, "country": country, "deviceId": device_id})["data"]
+    def bind_account_device(
+        self,
+        cookie: CookieInput = "",
+        account_id: str = "",
+        country: str = "VN",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Bind a persistent virtual device fingerprint to a Shopee account in the local vault."""
+        return self.invoke(
+            "bind_account_device",
+            {"cookie": cookie, "accountId": account_id, "country": country, "deviceId": device_id},
+        )["data"]
 
     def list_local_devices(self) -> Dict[str, Any]:
+        """List all device profiles stored in the local encrypted vault."""
         return self._consume_ptr(self._lib.MinSign_ListLocalDevices())["data"]
 
     def remove_local_device(self, account_key: str) -> Dict[str, Any]:
+        """Remove a stored device binding from the local vault."""
         return self.invoke("remove_local_device", {"accountKey": account_key})["data"]
 
     def sign_raw(
@@ -143,7 +216,7 @@ class MinSignClient:
         url: str,
         body: str = "",
         country: str = "",
-        cookie: str = "",
+        cookie: CookieInput = "",
         account_id: str = "",
         device_id: str = "",
         brand: str = "",
@@ -152,7 +225,9 @@ class MinSignClient:
         attach_risk_headers: bool = False,
         force_refresh_risk: bool = False,
         sec_token: str = "",
+        client_type: str = "app",
     ) -> Dict[str, Any]:
+        """Generate Shopee security signature headers for a raw URL/body (supports client_type='app' or 'web')."""
         return self.invoke(
             "sign_raw",
             {
@@ -168,20 +243,49 @@ class MinSignClient:
                 "attachRiskHeaders": attach_risk_headers,
                 "forceRefreshRisk": force_refresh_risk,
                 "secToken": sec_token,
+                "clientType": client_type,
+            },
+        )["data"]
+
+    def sign_web(
+        self,
+        url: str,
+        body: str = "",
+        country: str = "",
+        cookie: CookieInput = "",
+        account_id: str = "",
+        device_id: str = "",
+        proxy: str = "",
+        fetch_live: bool = False,
+    ) -> Dict[str, Any]:
+        """Generate Shopee Web Chrome 131 security headers and patched cookies via MinSign_SignWeb."""
+        return self._call_export(
+            "MinSign_SignWeb",
+            "sign_web",
+            {
+                "url": url,
+                "body": body,
+                "country": country,
+                "cookie": cookie,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "proxy": proxy,
+                "fetchLive": fetch_live,
             },
         )["data"]
 
     def get_risk_token(
         self,
         country: str = "VN",
-        cookie: str = "",
+        cookie: CookieInput = "",
         account_id: str = "",
         device_id: str = "",
         brand: str = "",
         force_refresh: bool = False,
         sec_token: str = "",
     ) -> Dict[str, Any]:
-        payload = json.dumps(
+        """Fetch or refresh Shopee anti-fraud risk tokens (af-ac-enc-dat / sz-token)."""
+        payload = self._normalize_payload(
             {
                 "country": country,
                 "cookie": cookie,
@@ -190,13 +294,49 @@ class MinSignClient:
                 "brand": brand,
                 "forceRefresh": force_refresh,
                 "secToken": sec_token,
-            },
-            ensure_ascii=False,
-        ).encode("utf-8")
+            }
+        )
         return self._consume_ptr(self._lib.MinSign_GetRiskToken(payload))["data"]
 
-    # --- Nhóm 2: Chi tiết Sản Phẩm, Gian Hàng, Voucher, Tìm kiếm ---
-    def get_product_detail(self, product_url: str = "", shop_id: str = "", item_id: str = "", proxy: str = "", cookie: str = "", country: str = "", account_id: str = "", include_shop: bool = True) -> Dict[str, Any]:
+    # =========================================================================
+    # Group 2: Products, Shops, Vouchers, Search, Recommendations & URL Tools
+    # =========================================================================
+
+    def resolve_shopee_url(
+        self,
+        url: str = "",
+        shop_id: str = "",
+        item_id: str = "",
+        country: str = "",
+        proxy: str = "",
+        follow_redirect: bool = False,
+    ) -> Dict[str, Any]:
+        """Parse any Shopee URL (product, shop, video, live, shortlink) or build a canonical URL from shop_id/item_id."""
+        return self._call_export(
+            "MinSign_ResolveShopeeUrl",
+            "resolve_shopee_url",
+            {
+                "url": url,
+                "shopId": str(shop_id or ""),
+                "itemId": str(item_id or ""),
+                "country": country,
+                "proxy": proxy,
+                "followRedirect": follow_redirect,
+            },
+        )["data"]
+
+    def get_product_detail(
+        self,
+        product_url: str = "",
+        shop_id: str = "",
+        item_id: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+        account_id: str = "",
+        include_shop: bool = True,
+    ) -> Dict[str, Any]:
+        """Fetch full product details, pricing, stock, variations/models, and optional shop summary."""
         return self.invoke(
             "get_product_detail",
             {
@@ -211,11 +351,180 @@ class MinSignClient:
             },
         )["data"]
 
-    def get_shop_overview(self, shop_url: str = "", shop_id: str = "", username: str = "", proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
-        return self.invoke("get_shop_overview", {"shopUrl": shop_url, "shopId": str(shop_id or ""), "username": username, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+    def batch_get_product_details(
+        self,
+        items: Optional[List[Dict[str, Any]]] = None,
+        product_urls: Optional[List[str]] = None,
+        country: str = "",
+        cookie: CookieInput = "",
+        cookies: Optional[List[CookieInput]] = None,
+        proxy: str = "",
+        proxies: Optional[List[str]] = None,
+        concurrency: int = 5,
+    ) -> Dict[str, Any]:
+        """Fetch multiple product details concurrently using a native Go worker pool with proxy/cookie rotation."""
+        return self._call_export(
+            "MinSign_BatchGetProductDetails",
+            "batch_get_product_details",
+            {
+                "items": items or [],
+                "productUrls": product_urls or [],
+                "country": country,
+                "cookie": cookie,
+                "cookies": cookies or [],
+                "proxy": proxy,
+                "proxies": proxies or [],
+                "concurrency": concurrency,
+            },
+        )["data"]
 
-    def get_shop_products(self, shop_id: str = "", shop_url: str = "", limit: int = 30, offset: int = 0, proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
-        return self.invoke("get_shop_products", {"shopId": str(shop_id or ""), "shopUrl": shop_url, "limit": limit, "offset": offset, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+    def get_product_ratings(
+        self,
+        product_url: str = "",
+        shop_id: str = "",
+        item_id: str = "",
+        limit: int = 20,
+        offset: int = 0,
+        filter: int = 0,
+        type: int = 0,
+        country: str = "",
+        cookie: CookieInput = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch product customer reviews, star rating summary, and review media URLs."""
+        return self._call_export(
+            "MinSign_GetProductRatings",
+            "get_product_ratings",
+            {
+                "productUrl": product_url,
+                "shopId": str(shop_id or ""),
+                "itemId": str(item_id or ""),
+                "limit": limit,
+                "offset": offset,
+                "filter": filter,
+                "type": type,
+                "country": country,
+                "cookie": cookie,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_flash_sale_items(
+        self,
+        promotion_id: int = 0,
+        limit: int = 20,
+        offset: int = 0,
+        country: str = "",
+        cookie: CookieInput = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch active Shopee Flash Sale sessions and discounted flash-sale items."""
+        return self._call_export(
+            "MinSign_GetFlashSaleItems",
+            "get_flash_sale_items",
+            {
+                "promotionId": promotion_id,
+                "limit": limit,
+                "offset": offset,
+                "country": country,
+                "cookie": cookie,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_recommend_products(
+        self,
+        bundle: str = "",
+        shop_id: str = "",
+        item_id: str = "",
+        limit: int = 20,
+        offset: int = 0,
+        country: str = "",
+        cookie: CookieInput = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch Shopee recommendation feeds (daily discover or item-detail similar products)."""
+        return self._call_export(
+            "MinSign_GetRecommendProducts",
+            "get_recommend_products",
+            {
+                "bundle": bundle,
+                "shopId": str(shop_id or ""),
+                "itemId": str(item_id or ""),
+                "limit": limit,
+                "offset": offset,
+                "country": country,
+                "cookie": cookie,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_search_suggestions(
+        self,
+        keyword: str = "",
+        limit: int = 10,
+        country: str = "",
+        cookie: CookieInput = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch live Shopee autocomplete keyword suggestions for a search query."""
+        return self._call_export(
+            "MinSign_GetSearchSuggestions",
+            "get_search_suggestions",
+            {
+                "keyword": keyword,
+                "limit": limit,
+                "country": country,
+                "cookie": cookie,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_shop_overview(
+        self,
+        shop_url: str = "",
+        shop_id: str = "",
+        username: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch shop profile metadata, follower counts, rating, and seller status."""
+        return self.invoke(
+            "get_shop_overview",
+            {
+                "shopUrl": shop_url,
+                "shopId": str(shop_id or ""),
+                "username": username,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
+
+    def get_shop_products(
+        self,
+        shop_id: str = "",
+        shop_url: str = "",
+        limit: int = 30,
+        offset: int = 0,
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+    ) -> Dict[str, Any]:
+        """List products in a shop with pagination."""
+        return self.invoke(
+            "get_shop_products",
+            {
+                "shopId": str(shop_id or ""),
+                "shopUrl": shop_url,
+                "limit": limit,
+                "offset": offset,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
 
     def get_shop_newest_products(
         self,
@@ -228,10 +537,11 @@ class MinSignClient:
         since_timestamp: int = 0,
         within_hours: int = 0,
         proxy: str = "",
-        cookie: str = "",
+        cookie: CookieInput = "",
         country: str = "",
         account_id: str = "",
     ) -> Dict[str, Any]:
+        """Fetch newly listed products of a shop with optional incremental cursor filtering."""
         return self.invoke(
             "get_shop_newest_products",
             {
@@ -250,18 +560,73 @@ class MinSignClient:
             },
         )["data"]
 
-    def get_shop_categories(self, shop_id: str = "", shop_url: str = "", proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
-        return self.invoke("get_shop_categories", {"shopId": str(shop_id or ""), "shopUrl": shop_url, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+    def get_shop_categories(
+        self,
+        shop_id: str = "",
+        shop_url: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch in-shop custom category collections."""
+        return self.invoke(
+            "get_shop_categories",
+            {
+                "shopId": str(shop_id or ""),
+                "shopUrl": shop_url,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
 
-    def get_shop_vouchers(self, shop_id: str = "", shop_url: str = "", proxy: str = "", cookie: str = "", country: str = "") -> Dict[str, Any]:
-        return self.invoke("get_shop_vouchers", {"shopId": str(shop_id or ""), "shopUrl": shop_url, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+    def get_shop_vouchers(
+        self,
+        shop_id: str = "",
+        shop_url: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+    ) -> Dict[str, Any]:
+        """List active discount vouchers offered by a shop."""
+        return self.invoke(
+            "get_shop_vouchers",
+            {
+                "shopId": str(shop_id or ""),
+                "shopUrl": shop_url,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
 
-    def search_products(self, keyword: str, country: str = "VN", sort_by: str = "relevancy", page: int = 0, limit: int = 20, proxy: str = "", cookie: str = "") -> Dict[str, Any]:
-        return self.invoke("search_products", {"keyword": keyword, "country": country, "sortBy": sort_by, "page": page, "limit": limit, "proxy": proxy, "cookie": cookie})["data"]
+    def search_products(
+        self,
+        keyword: str,
+        country: str = "VN",
+        sort_by: str = "relevancy",
+        page: int = 0,
+        limit: int = 20,
+        proxy: str = "",
+        cookie: CookieInput = "",
+    ) -> Dict[str, Any]:
+        """Search Shopee products by keyword with sort and pagination options."""
+        return self.invoke(
+            "search_products",
+            {
+                "keyword": keyword,
+                "country": country,
+                "sortBy": sort_by,
+                "page": page,
+                "limit": limit,
+                "proxy": proxy,
+                "cookie": cookie,
+            },
+        )["data"]
 
     def search_products_by_image(
         self,
-        cookie: str,
+        cookie: CookieInput,
         image_path: str = "",
         image_base64: str = "",
         image_url: str = "",
@@ -280,6 +645,7 @@ class MinSignClient:
         account_id: str = "",
         device_id: str = "",
     ) -> Dict[str, Any]:
+        """Search visually similar products on Shopee from a local image, base64, URL, or existing item."""
         return self.invoke(
             "search_products_by_image",
             {
@@ -313,6 +679,7 @@ class MinSignClient:
         image_source: str = "local",
         proxy: str = "",
     ) -> Dict[str, Any]:
+        """Detect object bounding boxes in an image for Shopee visual search."""
         return self.invoke(
             "get_image_bounding_box",
             {
@@ -326,13 +693,92 @@ class MinSignClient:
         )["data"]
 
     def get_category_tree(self, country: str = "VN", proxy: str = "") -> Dict[str, Any]:
+        """Fetch the marketplace category hierarchy tree for a Shopee region."""
         return self.invoke("get_category_tree", {"country": country, "proxy": proxy})["data"]
 
-    # --- Nhóm 3: Đăng Video Shopee & Affiliate ---
+    # =========================================================================
+    # Group 3: Account, Cart & Voucher Actions
+    # =========================================================================
+
+    def get_account_profile(
+        self,
+        cookie: CookieInput = "",
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Check cookie health and retrieve basic Shopee account profile information."""
+        return self._call_export(
+            "MinSign_GetAccountProfile",
+            "get_account_profile",
+            {
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def get_cart_summary(
+        self,
+        cookie: CookieInput = "",
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Retrieve the authenticated account's shopping cart groups, item count, and subtotal."""
+        return self._call_export(
+            "MinSign_GetCartSummary",
+            "get_cart_summary",
+            {
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def claim_shop_voucher(
+        self,
+        voucher_code: str = "",
+        promotion_id: int = 0,
+        signature: str = "",
+        shop_id: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Save/claim a shop voucher into the account's voucher wallet with risk headers attached."""
+        return self._call_export(
+            "MinSign_ClaimShopVoucher",
+            "claim_shop_voucher",
+            {
+                "voucherCode": voucher_code,
+                "promotionId": promotion_id,
+                "signature": signature,
+                "shopId": str(shop_id or ""),
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    # =========================================================================
+    # Group 4: Shopee Video Studio & Affiliate Marketing
+    # =========================================================================
+
     def upload_shopee_video(
         self,
         video_path: str,
-        cookie: str,
+        cookie: CookieInput,
         caption: str = "",
         hashtags: Optional[List[str]] = None,
         products: Optional[List[Dict[str, Any]]] = None,
@@ -344,6 +790,7 @@ class MinSignClient:
         account_id: str = "",
         mutate_mp4: bool = True,
     ) -> Dict[str, Any]:
+        """Upload and publish a Shopee Video with optional product tags and MP4 fingerprint mutation."""
         return self.invoke(
             "upload_shopee_video",
             {
@@ -362,111 +809,99 @@ class MinSignClient:
             },
         )["data"]
 
-    def precheck_video_upload(self, cookie: str, proxy: str = "", country: str = "VN", account_id: str = "") -> Dict[str, Any]:
-        return self.invoke("precheck_video_upload", {"cookie": cookie, "proxy": proxy, "country": country, "accountId": account_id})["data"]
-
-    def get_affiliate_products(self, cookie: str, keyword: str = "", page_offset: int = 0, page_limit: int = 20, proxy: str = "", country: str = "VN") -> Dict[str, Any]:
-        return self.invoke("get_affiliate_products", {"cookie": cookie, "keyword": keyword, "pageOffset": page_offset, "pageLimit": page_limit, "proxy": proxy, "country": country})["data"]
-
-    def mutate_mp4_fingerprint(self, input_path: str, output_path: str = "", in_place: bool = False) -> Dict[str, Any]:
-        return self.invoke("mutate_mp4_fingerprint", {"inputPath": input_path, "outputPath": output_path, "inPlace": in_place})["data"]
-
-    # --- Nhóm 4: Buff View Shopee Video & Kênh Video ---
-    def buff_video_view(
+    def precheck_video_upload(
         self,
-        video_url: str = "",
-        post_id: str = "",
+        cookie: CookieInput,
         proxy: str = "",
-        cookie: str = "",
-        watch_seconds: int = 18,
         country: str = "VN",
         account_id: str = "",
-        device_id: str = "",
-        simulate_wait: bool = False,
     ) -> Dict[str, Any]:
+        """Verify whether an account is eligible to publish Shopee Videos."""
         return self.invoke(
-            "buff_video_view",
-            {
-                "videoUrl": video_url,
-                "postId": post_id,
-                "proxy": proxy,
-                "cookie": cookie,
-                "watchSeconds": watch_seconds,
-                "country": country,
-                "accountId": account_id,
-                "deviceId": device_id,
-                "simulateWait": simulate_wait,
-            },
+            "precheck_video_upload",
+            {"cookie": cookie, "proxy": proxy, "country": country, "accountId": account_id},
         )["data"]
 
-    def buff_video_batch(
+    def get_affiliate_products(
         self,
-        video_url: str = "",
-        target_views: int = 10,
-        concurrency: int = 5,
-        proxies: Optional[List[str]] = None,
-        cookies: Optional[List[str]] = None,
-        watch_seconds: int = 18,
+        cookie: CookieInput,
+        keyword: str = "",
+        page_offset: int = 0,
+        page_limit: int = 20,
+        proxy: str = "",
         country: str = "VN",
-        post_id: str = "",
     ) -> Dict[str, Any]:
+        """Search affiliate-eligible products for video tagging."""
         return self.invoke(
-            "buff_video_batch",
+            "get_affiliate_products",
             {
-                "videoUrl": video_url,
-                "postId": post_id,
-                "targetViews": target_views,
-                "concurrency": concurrency,
-                "proxies": proxies or [],
-                "cookies": cookies or [],
-                "watchSeconds": watch_seconds,
+                "cookie": cookie,
+                "keyword": keyword,
+                "pageOffset": page_offset,
+                "pageLimit": page_limit,
+                "proxy": proxy,
                 "country": country,
             },
         )["data"]
 
-    def get_video_detail(self, video_url: str = "", post_id: str = "", proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
-        return self.invoke("get_video_detail", {"videoUrl": video_url, "postId": post_id, "proxy": proxy, "cookie": cookie, "country": country})["data"]
-
-    def get_shop_videos(
+    def get_affiliate_offer_list(
         self,
-        shop_url: str = "",
+        keyword: str = "",
         shop_id: str = "",
-        username: str = "",
-        user_id: str = "",
-        limit: int = 20,
-        page_token: str = "",
-        max_pages: int = 1,
-        include_product_videos: bool = True,
-        proxy: str = "",
-        cookie: str = "",
+        list_type: int = 0,
+        sort_type: int = 1,
+        page_offset: int = 0,
+        page_limit: int = 20,
+        cookie: CookieInput = "",
         country: str = "",
-        account_id: str = "",
+        proxy: str = "",
     ) -> Dict[str, Any]:
-        return self.invoke(
-            "get_shop_videos",
+        """Query Shopee Affiliate product offers with commission rates and monthly sales via Web Signer."""
+        return self._call_export(
+            "MinSign_GetAffiliateOfferList",
+            "get_affiliate_offer_list",
             {
-                "shopUrl": shop_url,
+                "keyword": keyword,
                 "shopId": str(shop_id or ""),
-                "username": username,
-                "userId": str(user_id or ""),
-                "limit": limit,
-                "pageToken": page_token,
-                "maxPages": max_pages,
-                "includeProductVideos": include_product_videos,
-                "proxy": proxy,
+                "listType": list_type,
+                "sortType": sort_type,
+                "pageOffset": page_offset,
+                "pageLimit": page_limit,
                 "cookie": cookie,
                 "country": country,
-                "accountId": account_id,
+                "proxy": proxy,
             },
         )["data"]
 
-    def get_channel_and_hashtag_videos(self, mode: str = "channel", request_user_id: str = "", hashtag_id: str = "", limit: int = 20, proxy: str = "", cookie: str = "", country: str = "VN") -> Dict[str, Any]:
-        return self.invoke("get_channel_and_hashtag_videos", {"mode": mode, "requestUserId": request_user_id, "hashtagId": hashtag_id, "limit": limit, "proxy": proxy, "cookie": cookie, "country": country})["data"]
+    def get_affiliate_commission_report(
+        self,
+        start_time: int = 0,
+        end_time: int = 0,
+        page_offset: int = 0,
+        page_limit: int = 20,
+        cookie: CookieInput = "",
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Query Shopee Affiliate conversion and commission report records via Web Signer."""
+        return self._call_export(
+            "MinSign_GetAffiliateCommissionReport",
+            "get_affiliate_commission_report",
+            {
+                "startTime": start_time,
+                "endTime": end_time,
+                "pageOffset": page_offset,
+                "pageLimit": page_limit,
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+            },
+        )["data"]
 
     def convert_affiliate_link(
         self,
         url: str,
-        cookie: str,
+        cookie: CookieInput,
         sub_id1: str = "",
         sub_id2: str = "",
         sub_id3: str = "",
@@ -481,6 +916,7 @@ class MinSignClient:
         account_id: str = "",
         device_id: str = "",
     ) -> Dict[str, Any]:
+        """Convert a single Shopee product/shop URL into a tracked affiliate short link."""
         return self.invoke(
             "convert_affiliate_link",
             {
@@ -504,7 +940,7 @@ class MinSignClient:
 
     def batch_convert_affiliate_links(
         self,
-        cookie: str,
+        cookie: CookieInput,
         urls: Optional[List[str]] = None,
         items: Optional[List[Dict[str, Any]]] = None,
         sub_id1: str = "",
@@ -522,6 +958,7 @@ class MinSignClient:
         account_id: str = "",
         device_id: str = "",
     ) -> Dict[str, Any]:
+        """Batch-convert multiple Shopee URLs into tracked affiliate short links."""
         return self.invoke(
             "batch_convert_affiliate_links",
             {
@@ -545,17 +982,169 @@ class MinSignClient:
             },
         )["data"]
 
-    # --- Nhóm 5: Buff View / Mắt Live Shopee ---
+    def mutate_mp4_fingerprint(
+        self,
+        input_path: str,
+        output_path: str = "",
+        in_place: bool = False,
+    ) -> Dict[str, Any]:
+        """Mutate MP4 container metadata/fingerprint locally without re-encoding."""
+        return self.invoke(
+            "mutate_mp4_fingerprint",
+            {"inputPath": input_path, "outputPath": output_path, "inPlace": in_place},
+        )["data"]
+
+    # =========================================================================
+    # Group 5: Shopee Video Discovery & View Booster
+    # =========================================================================
+
+    def buff_video_view(
+        self,
+        video_url: str = "",
+        post_id: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        watch_seconds: int = 18,
+        country: str = "VN",
+        account_id: str = "",
+        device_id: str = "",
+        simulate_wait: bool = False,
+    ) -> Dict[str, Any]:
+        """Execute a single Shopee Video view telemetry session."""
+        return self.invoke(
+            "buff_video_view",
+            {
+                "videoUrl": video_url,
+                "postId": post_id,
+                "proxy": proxy,
+                "cookie": cookie,
+                "watchSeconds": watch_seconds,
+                "country": country,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "simulateWait": simulate_wait,
+            },
+        )["data"]
+
+    def buff_video_batch(
+        self,
+        video_url: str = "",
+        target_views: int = 10,
+        concurrency: int = 5,
+        proxies: Optional[List[str]] = None,
+        cookies: Optional[List[CookieInput]] = None,
+        watch_seconds: int = 18,
+        country: str = "VN",
+        post_id: str = "",
+    ) -> Dict[str, Any]:
+        """Run concurrent Shopee Video view sessions with proxy/cookie rotation."""
+        return self.invoke(
+            "buff_video_batch",
+            {
+                "videoUrl": video_url,
+                "postId": post_id,
+                "targetViews": target_views,
+                "concurrency": concurrency,
+                "proxies": proxies or [],
+                "cookies": cookies or [],
+                "watchSeconds": watch_seconds,
+                "country": country,
+            },
+        )["data"]
+
+    def get_video_detail(
+        self,
+        video_url: str = "",
+        post_id: str = "",
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "VN",
+    ) -> Dict[str, Any]:
+        """Fetch Shopee Video metadata, metrics, tagged items, and direct media URL."""
+        return self.invoke(
+            "get_video_detail",
+            {
+                "videoUrl": video_url,
+                "postId": post_id,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
+
+    def get_shop_videos(
+        self,
+        shop_url: str = "",
+        shop_id: str = "",
+        username: str = "",
+        user_id: str = "",
+        limit: int = 20,
+        page_token: str = "",
+        max_pages: int = 1,
+        include_product_videos: bool = True,
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "",
+        account_id: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch videos published by a shop or creator profile."""
+        return self.invoke(
+            "get_shop_videos",
+            {
+                "shopUrl": shop_url,
+                "shopId": str(shop_id or ""),
+                "username": username,
+                "userId": str(user_id or ""),
+                "limit": limit,
+                "pageToken": page_token,
+                "maxPages": max_pages,
+                "includeProductVideos": include_product_videos,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+                "accountId": account_id,
+            },
+        )["data"]
+
+    def get_channel_and_hashtag_videos(
+        self,
+        mode: str = "channel",
+        request_user_id: str = "",
+        hashtag_id: str = "",
+        limit: int = 20,
+        proxy: str = "",
+        cookie: CookieInput = "",
+        country: str = "VN",
+    ) -> Dict[str, Any]:
+        """Fetch videos from a creator channel or hashtag feed."""
+        return self.invoke(
+            "get_channel_and_hashtag_videos",
+            {
+                "mode": mode,
+                "requestUserId": request_user_id,
+                "hashtagId": hashtag_id,
+                "limit": limit,
+                "proxy": proxy,
+                "cookie": cookie,
+                "country": country,
+            },
+        )["data"]
+
+    # =========================================================================
+    # Group 6: Shopee Live Commerce & Viewer Pipeline
+    # =========================================================================
+
     def get_live_session_detail(
         self,
         live_url: str = "",
         session_id: str = "",
         proxy: str = "",
-        cookie: str = "",
+        cookie: CookieInput = "",
         country: str = "VN",
         account_id: str = "",
         device_id: str = "",
     ) -> Dict[str, Any]:
+        """Fetch Shopee Live session metadata, viewer stats, stream URLs, and host info."""
         return self.invoke(
             "get_live_session_detail",
             {
@@ -569,12 +1158,37 @@ class MinSignClient:
             },
         )["data"]
 
+    def get_live_bag_items(
+        self,
+        live_url: str = "",
+        session_id: str = "",
+        offset: int = 0,
+        limit: int = 20,
+        country: str = "",
+        cookie: CookieInput = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Scrape pinned/shopping-bag products from a Shopee Live session with prices, stock, and affiliate info."""
+        return self._call_export(
+            "MinSign_GetLiveBagItems",
+            "get_live_bag_items",
+            {
+                "liveUrl": live_url,
+                "sessionId": str(session_id or ""),
+                "offset": offset,
+                "limit": limit,
+                "country": country,
+                "cookie": cookie,
+                "proxy": proxy,
+            },
+        )["data"]
+
     def buff_live_view(
         self,
         live_url: str = "",
         session_id: str = "",
         proxy: str = "",
-        cookie: str = "",
+        cookie: CookieInput = "",
         watch_seconds: int = 18,
         simulate_wait: bool = False,
         connect_ws: bool = True,
@@ -590,6 +1204,7 @@ class MinSignClient:
         device_id: str = "",
         from_source: str = "share",
     ) -> Dict[str, Any]:
+        """Run a single Shopee Live viewer session (join, stream pull, WebSocket, heartbeat, optional likes)."""
         return self.invoke(
             "buff_live_view",
             {
@@ -621,7 +1236,7 @@ class MinSignClient:
         target_views: int = 10,
         concurrency: int = 5,
         proxies: Optional[List[str]] = None,
-        cookies: Optional[List[str]] = None,
+        cookies: Optional[List[CookieInput]] = None,
         watch_seconds: int = 18,
         simulate_wait: bool = False,
         connect_ws: bool = True,
@@ -636,6 +1251,7 @@ class MinSignClient:
         country: str = "VN",
         from_source: str = "share",
     ) -> Dict[str, Any]:
+        """Run concurrent Shopee Live viewer sessions with proxy/cookie rotation."""
         return self.invoke(
             "buff_live_batch",
             {
@@ -661,14 +1277,17 @@ class MinSignClient:
             },
         )["data"]
 
-    # --- Nhóm 6: Cổng Gọi Ký Mở Rộng Vạn Năng ---
+    # =========================================================================
+    # Group 7: Universal Signed HTTP Gateway (App + Web)
+    # =========================================================================
+
     def execute_signed_request(
         self,
         url: str,
         method: str = "GET",
         body: Any = None,
         proxy: str = "",
-        cookie: str = "",
+        cookie: CookieInput = "",
         country: str = "",
         account_id: str = "",
         device_id: str = "",
@@ -678,7 +1297,9 @@ class MinSignClient:
         force_refresh_risk: bool = False,
         sec_token: str = "",
         custom_headers: Optional[Dict[str, str]] = None,
+        client_type: str = "app",
     ) -> Dict[str, Any]:
+        """Sign and execute any arbitrary Shopee HTTP request (supports client_type='app' or 'web')."""
         return self.invoke(
             "execute_signed_request",
             {
@@ -696,5 +1317,6 @@ class MinSignClient:
                 "forceRefreshRisk": force_refresh_risk,
                 "secToken": sec_token,
                 "customHeaders": custom_headers or {},
+                "clientType": client_type,
             },
         )["data"]
