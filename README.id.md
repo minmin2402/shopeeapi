@@ -1,18 +1,18 @@
 🌐 **Bahasa:** [English](README.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md) | [ภาษาไทย](README.th.md) | [简体中文](README.zh.md)
 
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.1.0)
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0%20%C2%B7%2044%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
+[![Release](https://img.shields.io/badge/Release-v2.1.0%20%C2%B7%2054%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
 [![Wrappers](https://img.shields.io/badge/7%20Bahasa-Python%20%7C%20Node%2FTS%20%7C%20C%23%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Go%20%7C%20Java-10B981?style=for-the-badge)](./docs/QUICKSTART_BY_LANGUAGE.md)
 [![Shopee Regions](https://img.shields.io/badge/8%20Negara%20Shopee-VN%20%7C%20ID%20%7C%20TH%20%7C%20MY%20%7C%20PH%20%7C%20SG%20%7C%20TW%20%7C%20BR-EE4D2D?style=for-the-badge)](#8-wilayah-shopee-yang-didukung)
 [![Dual Signer](https://img.shields.io/badge/Dual%20Signer-App%20Mobile%20%2B%20Web%20Chrome%20131-2563EB?style=for-the-badge)](#arsitektur-dual-signing)
 [![Get X-API-Key](https://img.shields.io/badge/Dapatkan%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**Satu library native Windows x64 C-ABI (`minsign_sdk.dll`) — 44 API Shopee & Shopee Affiliate siap produksi, 7 wrapper bahasa resmi, 8 wilayah Shopee, dan Sistem Dual Signing (App Mobile UniDBG + Web Chrome 131).**
+**Satu library native Windows x64 C-ABI (`minsign_sdk.dll`) — 54 API Shopee, MCN & Shopee Affiliate siap produksi, 7 wrapper bahasa resmi, 8 wilayah Shopee, dan Sistem Dual Signing (App Mobile UniDBG + Web Chrome 131).**
 
-Tanpa browser automation, tanpa emulator Android, dan tanpa repot memelihara skrip anti-bot. Bangun scraper produk Shopee berkecepatan tinggi, bot Affiliate komisi tinggi, pipeline Shopee Live & Shopee Video, serta pencarian produk via gambar langsung dari **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go, atau Java JNA** hanya dengan satu DLL yang dilengkapi `uTLS` native, sticky Android device vault (`devices_vault.json`), dan Go worker pool multi-thread.
+Tanpa browser automation, tanpa emulator Android, dan tanpa repot memelihara skrip anti-bot. Bangun scraper produk Shopee berkecepatan tinggi, bot Affiliate komisi tinggi, manajemen MCN & persetujuan undangan otomatis, pipeline Shopee Live & Shopee Video, serta pencarian produk via gambar langsung dari **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go, atau Java JNA** hanya dengan satu DLL yang dilengkapi `uTLS` native, sticky Android device vault (`devices_vault.json`), dan Go worker pool multi-thread.
 
-> 📚 **Dokumentasi:** [Referensi JSON 44 API (EN)](./docs/API_REFERENCE.md) · [Quickstart 7 Bahasa (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [5 Playbook Otomasi (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Changelog](./CHANGELOG.md)
+> 📚 **Dokumentasi:** [Referensi JSON 54 API (EN)](./docs/API_REFERENCE.md) · [Quickstart 7 Bahasa (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [Playbook Otomasi (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Changelog](./CHANGELOG.md)
 
 ---
 
@@ -22,7 +22,7 @@ Seluruh trafik HTTP/WebSocket ke Shopee berjalan **langsung dari mesin Anda mela
 
 ```mermaid
 flowchart LR
-    A["Aplikasi Anda<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.0.0)<br/>44 API · 48 Ekspor C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
+    A["Aplikasi Anda<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.1.0)<br/>54 API · 58 Ekspor C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
     B -->|X-API-Key<br/>App UniDBG & Web Chrome 131| C["MinSign Cloud Signer<br/>vip-sign.minmintool.site<br/>x-sap-ri · x-sap-sec · af-ac-enc-sz-token"]
     C -->|Tanda Tangan Dinamis| B
     B -->|Trafik Langsung via Proxy Anda<br/>HTTP / SOCKS5| D["8 Negara Shopee<br/>VN · ID · TH · MY<br/>PH · SG · TW · BR"]
@@ -30,7 +30,7 @@ flowchart LR
 
 ---
 
-## Apa yang Bisa Anda Bangun dengan v2.0.0?
+## Apa yang Bisa Anda Bangun dengan v2.1.0?
 
 <table>
   <tr>
@@ -96,7 +96,7 @@ flowchart LR
 1. Kunjungi **[https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)** (mendukung Bahasa Inggris, Vietnam & Thailand).
 2. Daftar atau masuk dengan akun Google Anda.
 3. Isi saldo **Pay-As-You-Go** atau aktifkan paket bulanan (**Basic / Pro / VIP**) lalu salin **`X-API-Key`** di halaman **API Keys**.
-4. Masukkan `X-API-Key` ke `MinSignClient` dan seluruh 44 API siap digunakan.
+4. Masukkan `X-API-Key` ke `MinSignClient` dan seluruh 54 API siap digunakan.
 
 ---
 
@@ -165,9 +165,9 @@ Console.WriteLine(ratings.GetRawText());
 
 ---
 
-## Ringkasan Lengkap 44 API (`minsign_sdk.dll` v2.0.0)
+## Ringkasan Lengkap 54 API (`minsign_sdk.dll` v2.1.0)
 
-> Selain **44 Action API** di bawah ini, DLL mengekspor **4 fungsi inti C-ABI**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, `MinSign_Free` (**total 48 ekspor C-ABI**). Kontrak JSON lengkap tersedia di [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
+> Selain **54 Action API** di bawah ini, DLL mengekspor **4 fungsi inti C-ABI**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, `MinSign_Free` (**total 58 ekspor C-ABI**). Kontrak JSON lengkap tersedia di [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
 
 ### 1. Sistem, Device Vault & Dual Signing (7 API)
 
@@ -247,6 +247,21 @@ Console.WriteLine(ratings.GetRawText());
 | # | Action (`MinSign_Invoke`) | Ekspor C-ABI | Deskripsi | Cookie? | Versi |
 |---|---|---|---|---|---|
 | 44 | `execute_signed_request` | `MinSign_ExecuteSignedRequest` | Tandatangani & jalankan **endpoint Shopee GET/POST apa pun** lewat `uTLS` + Proxy (`clientType: "app"\|"web"` & `attachRiskHeaders`) | Opsional | `v1.0` / `v2.0` |
+
+### 8. Shopee MCN, Persetujuan Undangan (`acp`) & Affiliate Center (10 API — *BARU di v2.1*)
+
+| # | Action (`MinSign_Invoke`) | Ekspor C-ABI | Deskripsi | Cookie? | Versi |
+|---|---|---|---|---|---|
+| 45 | **`get_affiliate_user_profile`** | **`MinSign_GetAffiliateUserProfile`** | **Ambil profil Affiliate, `affiliateId`, status bank/pajak & flag `isAllowMcnSetAds`** | **Ya** | **`v2.1`** |
+| 46 | **`get_mcn_partnership_status`** | **`MinSign_GetMcnPartnershipStatus`** | **Pindai status kemitraan MCN & undangan tertunda (GraphQL + fallback REST)** | **Ya** | **`v2.1`** |
+| 47 | **`reply_mcn_invitation`** (`acp_mcn_invitation`) | **`MinSign_ReplyMcnInvitation`** | **Terima (`accept`) atau tolak (`reject`) undangan MCN (`mcnKOLReplyToMCNRequest`)** | **Ya** | **`v2.1`** |
+| 48 | **`get_mcn_kol_partnerships`** | **`MinSign_GetMcnKolPartnerships`** | **Daftar kontrak KOL/Affiliate di Portal MCN (`mcn.affiliate.shopee.*`)** | **Ya** | **`v2.1`** |
+| 49 | **`send_mcn_partnership_invitation`** | **`MinSign_SendMcnPartnershipInvitation`** | **Validasi username/ID KOL & kirim undangan kemitraan dari Portal MCN** | **Ya** | **`v2.1`** |
+| 50 | **`manage_mcn_partnership`** | **`MinSign_ManageMcnPartnership`** | **Kelola kontrak sisi MCN (`reply`\|`accept`\|`reject`\|`change_fee`\|`extend`\|`cancel`\|`history`)** | **Ya** | **`v2.1`** |
+| 51 | **`get_mcn_analytics`** | **`MinSign_GetMcnAnalytics`** | **Ambil metrik performa MCN, analitik afiliasi, kampanye & info dasar MCN** | **Ya** | **`v2.1`** |
+| 52 | **`get_affiliate_payment_tax`** | **`MinSign_GetAffiliatePaymentTax`** | **Cek bank pembayaran, TIN/CCCD & tarif pajak EWT/VAT ternormalisasi** | **Ya** | **`v2.1`** |
+| 53 | **`get_affiliate_click_report`** | **`MinSign_GetAffiliateClickReport`** | **Ambil laporan klik Affiliate (`/api/v1/click_report/list`)** | **Ya** | **`v2.1`** |
+| 54 | **`get_affiliate_billing`** | **`MinSign_GetAffiliateBilling`** | **Ambil tagihan payout Affiliate & rincian potongan biaya manajemen MCN** | **Ya** | **`v2.1`** |
 
 ---
 

@@ -1,18 +1,18 @@
 🌐 **ภาษา:** [English](README.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md) | [ภาษาไทย](README.th.md) | [简体中文](README.zh.md)
 
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.1.0)
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0%20%C2%B7%2044%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
+[![Release](https://img.shields.io/badge/Release-v2.1.0%20%C2%B7%2054%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
 [![Wrappers](https://img.shields.io/badge/7%20%E0%B8%A0%E0%B8%B2%E0%B8%A9%E0%B8%B2-Python%20%7C%20Node%2FTS%20%7C%20C%23%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Go%20%7C%20Java-10B981?style=for-the-badge)](./docs/QUICKSTART_BY_LANGUAGE.md)
 [![Shopee Regions](https://img.shields.io/badge/8%20%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%97%E0%B8%A8%20Shopee-VN%20%7C%20ID%20%7C%20TH%20%7C%20MY%20%7C%20PH%20%7C%20SG%20%7C%20TW%20%7C%20BR-EE4D2D?style=for-the-badge)](#รองรับ-8-ตลาด-shopee)
 [![Dual Signer](https://img.shields.io/badge/Dual%20Signer-App%20Mobile%20%2B%20Web%20Chrome%20131-2563EB?style=for-the-badge)](#สถาปัตยกรรม-dual-signing)
 [![Get X-API-Key](https://img.shields.io/badge/%E0%B8%A3%E0%B8%B1%E0%B8%9A%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**ไลบรารีเนทีฟ Windows x64 C-ABI ไฟล์เดียว (`minsign_sdk.dll`) — ครบเครื่อง 44 API สำหรับ Shopee และ Shopee Affiliate พร้อม Wrapper ทางการ 7 ภาษา รองรับ 8 ประเทศ และระบบเซ็นลายเซ็นคู่ (App Mobile UniDBG + Web Chrome 131)**
+**ไลบรารีเนทีฟ Windows x64 C-ABI ไฟล์เดียว (`minsign_sdk.dll`) — ครบเครื่อง 54 API สำหรับ Shopee, MCN และ Shopee Affiliate พร้อม Wrapper ทางการ 7 ภาษา รองรับ 8 ประเทศ และระบบเซ็นลายเซ็นคู่ (App Mobile UniDBG + Web Chrome 131)**
 
-ไม่ต้องเปิดเบราว์เซอร์ ไม่ต้องรันอีมูเลเตอร์ และไม่ต้องปวดหัวกับสคริปต์กันบอท สร้างระบบดึงข้อมูลสินค้า Shopee ความเร็วสูง บอท Affiliate ค่าคอมสูง ระบบ Shopee Live / Shopee Video และค้นหาสินค้าด้วยภาพได้ทันทีจาก **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go หรือ Java JNA** ผ่าน DLL ไฟล์เดียวที่มาพร้อม `uTLS` เนทีฟ, คลังอุปกรณ์ Android ประจำบัญชี (`devices_vault.json`) และ Go Worker Pool แบบมัลติเธรด
+ไม่ต้องเปิดเบราว์เซอร์ ไม่ต้องรันอีมูเลเตอร์ และไม่ต้องปวดหัวกับสคริปต์กันบอท สร้างระบบดึงข้อมูลสินค้า Shopee ความเร็วสูง บอท Affiliate ค่าคอมสูง ระบบจัดการ MCN และตอบรับคำเชิญอัตโนมัติ ระบบ Shopee Live / Shopee Video และค้นหาสินค้าด้วยภาพได้ทันทีจาก **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go หรือ Java JNA** ผ่าน DLL ไฟล์เดียวที่มาพร้อม `uTLS` เนทีฟ, คลังอุปกรณ์ Android ประจำบัญชี (`devices_vault.json`) และ Go Worker Pool แบบมัลติเธรด
 
-> 📚 **ศูนย์เอกสาร:** [คู่มือ JSON ครบ 44 API (EN)](./docs/API_REFERENCE.md) · [เริ่มต้นใช้งาน 7 ภาษา (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [5 สูตรสำเร็จงานอัตโนมัติ (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [ประวัติเวอร์ชัน](./CHANGELOG.md)
+> 📚 **ศูนย์เอกสาร:** [คู่มือ JSON ครบ 54 API (EN)](./docs/API_REFERENCE.md) · [เริ่มต้นใช้งาน 7 ภาษา (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [สูตรสำเร็จงานอัตโนมัติ (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [ประวัติเวอร์ชัน](./CHANGELOG.md)
 
 ---
 
@@ -22,7 +22,7 @@
 
 ```mermaid
 flowchart LR
-    A["แอปของคุณ<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.0.0)<br/>44 APIs · 48 ฟังก์ชัน C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
+    A["แอปของคุณ<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.1.0)<br/>54 APIs · 58 ฟังก์ชัน C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
     B -->|X-API-Key<br/>App UniDBG & Web Chrome 131| C["MinSign Cloud Signer<br/>vip-sign.minmintool.site<br/>x-sap-ri · x-sap-sec · af-ac-enc-sz-token"]
     C -->|ลายเซ็นความปลอดภัย| B
     B -->|เชื่อมต่อตรงผ่าน Proxy ของคุณ<br/>HTTP / SOCKS5| D["8 ตลาด Shopee<br/>VN · ID · TH · MY<br/>PH · SG · TW · BR"]
@@ -30,7 +30,7 @@ flowchart LR
 
 ---
 
-## สร้างอะไรได้บ้างด้วย v2.0.0?
+## สร้างอะไรได้บ้างด้วย v2.1.0?
 
 <table>
   <tr>
@@ -96,7 +96,7 @@ flowchart LR
 1. เข้าไปที่ **[https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)** (รองรับภาษาไทย, อังกฤษ และเวียดนาม)
 2. สมัครสมาชิกหรือเข้าสู่ระบบด้วย Google
 3. เติมเงินแบบ **Pay-As-You-Go** หรือเลือกแพ็กเกจรายเดือน (**Basic / Pro / VIP**) แล้วคัดลอก **`X-API-Key`** จากเมนู **API Keys**
-4. นำ `X-API-Key` ไปกำหนดใน `MinSignClient` เพื่อใช้งานครบทั้ง 44 API ได้ทันที
+4. นำ `X-API-Key` ไปกำหนดใน `MinSignClient` เพื่อใช้งานครบทั้ง 54 API ได้ทันที
 
 ---
 
@@ -169,9 +169,9 @@ Console.WriteLine(flashSale.GetRawText());
 
 ---
 
-## ตารางอ้างอิงครบทั้ง 44 API (`minsign_sdk.dll` v2.0.0)
+## ตารางอ้างอิงครบทั้ง 54 API (`minsign_sdk.dll` v2.1.0)
 
-> นอกเหนือจาก **44 Action API** ด้านล่าง DLL ยังมี **4 ฟังก์ชันแกนหลัก C-ABI** ได้แก่ `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke` และ `MinSign_Free` (**รวม 48 C-ABI Exports**) ดูโครงสร้าง JSON อย่างละเอียดที่ [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md)
+> นอกเหนือจาก **54 Action API** ด้านล่าง DLL ยังมี **4 ฟังก์ชันแกนหลัก C-ABI** ได้แก่ `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke` และ `MinSign_Free` (**รวม 58 C-ABI Exports**) ดูโครงสร้าง JSON อย่างละเอียดที่ [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md)
 
 ### 1. ระบบ, คลังอุปกรณ์ & Dual Signing (7 API)
 
@@ -251,6 +251,21 @@ Console.WriteLine(flashSale.GetRawText());
 | # | Action (`MinSign_Invoke`) | C-ABI Export | คำอธิบาย | ใช้ Cookie? | เวอร์ชัน |
 |---|---|---|---|---|---|
 | 44 | `execute_signed_request` | `MinSign_ExecuteSignedRequest` | เซ็นและยิง **API Shopee GET/POST ใดก็ได้** ผ่าน `uTLS` + Proxy (`clientType: "app"\|"web"` & `attachRiskHeaders`) | ไม่บังคับ | `v1.0` / `v2.0` |
+
+### 8. Shopee MCN, ตอบรับคำเชิญ (`acp`) และศูนย์ Affiliate (10 API — *ใหม่ใน v2.1*)
+
+| # | Action (`MinSign_Invoke`) | C-ABI Export | คำอธิบาย | ใช้ Cookie? | เวอร์ชัน |
+|---|---|---|---|---|---|
+| 45 | **`get_affiliate_user_profile`** | **`MinSign_GetAffiliateUserProfile`** | **ดึงโปรไฟล์ Affiliate, `affiliateId`, สถานะบัญชี/ภาษี และ `isAllowMcnSetAds`** | **ใช้** | **`v2.1`** |
+| 46 | **`get_mcn_partnership_status`** | **`MinSign_GetMcnPartnershipStatus`** | **สแกนสถานะ MCN ปัจจุบันและคำเชิญ MCN ที่รออนุมัติ (GraphQL + REST fallback)** | **ใช้** | **`v2.1`** |
+| 47 | **`reply_mcn_invitation`** (`acp_mcn_invitation`) | **`MinSign_ReplyMcnInvitation`** | **ตอบรับ (`accept`) หรือปฏิเสธ (`reject`) คำเชิญ MCN (`mcnKOLReplyToMCNRequest`)** | **ใช้** | **`v2.1`** |
+| 48 | **`get_mcn_kol_partnerships`** | **`MinSign_GetMcnKolPartnerships`** | **ดึงรายชื่อความร่วมมือ KOL/Affiliate จากพอร์ทัล MCN (`mcn.affiliate.shopee.*`)** | **ใช้** | **`v2.1`** |
+| 49 | **`send_mcn_partnership_invitation`** | **`MinSign_SendMcnPartnershipInvitation`** | **ตรวจสอบ username/ID และส่งคำเชิญเข้าร่วม MCN ถึง KOL/Affiliate** | **ใช้** | **`v2.1`** |
+| 50 | **`manage_mcn_partnership`** | **`MinSign_ManageMcnPartnership`** | **จัดการสัญญาฝั่ง MCN (`reply`\|`accept`\|`reject`\|`change_fee`\|`extend`\|`cancel`\|`history`)** | **ใช้** | **`v2.1`** |
+| 51 | **`get_mcn_analytics`** | **`MinSign_GetMcnAnalytics`** | **ดึงสถิติ MCN, ประสิทธิภาพ Affiliate, แคมเปญ และข้อมูลพื้นฐาน MCN** | **ใช้** | **`v2.1`** |
+| 52 | **`get_affiliate_payment_tax`** | **`MinSign_GetAffiliatePaymentTax`** | **ตรวจสอบบัญชีธนาคาร เลขประจำตัวผู้เสียภาษี TIN/CCCD และอัตราภาษี EWT/VAT** | **ใช้** | **`v2.1`** |
+| 53 | **`get_affiliate_click_report`** | **`MinSign_GetAffiliateClickReport`** | **ดึงรายงานการคลิกลิงก์ Affiliate (`/api/v1/click_report/list`)** | **ใช้** | **`v2.1`** |
+| 54 | **`get_affiliate_billing`** | **`MinSign_GetAffiliateBilling`** | **ดึงบิลการจ่ายเงิน Affiliate และรายละเอียดค่าธรรมเนียม MCN ที่ถูกหัก** | **ใช้** | **`v2.1`** |
 
 ---
 

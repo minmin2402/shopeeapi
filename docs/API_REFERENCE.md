@@ -1,6 +1,6 @@
-# MinSign Native Universal SDK — Complete 44-API Reference (`v2.0.0`)
+# MinSign Native Universal SDK — Complete 54-API Reference (`v2.1.0`)
 
-**Library:** `bin/win-x64/minsign_sdk.dll` (`v2.0.0` · **44 Action APIs** · **48 C-ABI Exports**)  
+**Library:** `bin/win-x64/minsign_sdk.dll` (`v2.1.0` · **54 Action APIs** · **58 C-ABI Exports**)  
 **Cloud Signer:** `https://vip-sign.minmintool.site` (requires `X-API-Key`)  
 **Supported Regions:** `VN` (`shopee.vn`), `ID` (`shopee.co.id`), `TH` (`shopee.co.th`), `MY` (`shopee.com.my`), `PH` (`shopee.ph`), `SG` (`shopee.sg`), `TW` (`shopee.tw`), `BR` (`shopee.com.br`)
 
@@ -31,9 +31,9 @@ Every C-ABI export returns a heap-allocated UTF-8 JSON C-string (`char*`). **Cal
 
 | C-ABI Signature | Purpose |
 |---|---|
-| `char* MinSign_Version(void)` | Returns `{"ok":true,"code":0,"data":{"version":"2.0.0",...}}`. |
+| `char* MinSign_Version(void)` | Returns `{"ok":true,"code":0,"data":{"version":"2.1.0",...}}`. |
 | `char* MinSign_Init(const char* configJson)` | Initializes the singleton SDK client. Must be called once before invoking APIs. |
-| `char* MinSign_Invoke(const char* action, const char* reqJson)` | Universal dispatcher accepting any of the 44 snake_case `action` names below. |
+| `char* MinSign_Invoke(const char* action, const char* reqJson)` | Universal dispatcher accepting any of the 54 snake_case `action` names below. |
 | `void MinSign_Free(char* ptr)` | Frees any `char*` pointer returned by the DLL. Never pass to standard `free()`. |
 
 **`MinSign_Init` Request JSON:**
@@ -58,7 +58,7 @@ Every C-ABI export returns a heap-allocated UTF-8 JSON C-string (`char*`). **Cal
 
 ---
 
-## Table of Contents (44 Action APIs)
+## Table of Contents (54 Action APIs)
 
 1. [System, Device Vault & Dual Signing (7 APIs)](#1-system-device-vault--dual-signing-7-apis)
 2. [Products, Shops, Ratings & Discovery (16 APIs)](#2-products-shops-ratings--discovery-16-apis)
@@ -67,6 +67,7 @@ Every C-ABI export returns a heap-allocated UTF-8 JSON C-string (`char*`). **Cal
 5. [Shopee Video Studio, Scraper & View Booster (8 APIs)](#5-shopee-video-studio-scraper--view-booster-8-apis)
 6. [Shopee Live Commerce & Viewer Engine (4 APIs)](#6-shopee-live-commerce--viewer-engine-4-apis)
 7. [Universal Signed HTTP Gateway (1 API)](#7-universal-signed-http-gateway-1-api)
+8. [Shopee MCN, Invitation Accept (`acp`) & Affiliate Center (10 APIs — *NEW in v2.1*)](#8-shopee-mcn-invitation-accept-acp--affiliate-center-10-apis--new-in-v21)
 
 ---
 
@@ -882,3 +883,58 @@ Universal signed HTTP client for calling **any** Shopee GET or POST API through 
   "totalLatencyMs": 420
 }
 ```
+
+---
+
+## 8. Shopee MCN, Invitation Accept (`acp`) & Affiliate Center (10 APIs — *NEW in v2.1*)
+
+### 8.1 `get_affiliate_user_profile` (`MinSign_GetAffiliateUserProfile`)
+Queries `GET https://affiliate.<domain>/api/v3/user/profile` (Web Signer + automatic Mobile fallback) to retrieve `affiliateId`, `region`, `shopeeUserName`, `paymentSettingStatus`, `paymentSettingTaxStatus`, and `isAllowMcnSetAds`.
+- **Request:** `{ "cookie": "...", "country": "VN", "proxy": "", "allowMobileFallback": true }`
+- **Response `data`:** `{ "affiliateId": "...", "region": "VN", "shopeeUserName": "...", "paymentSettingStatus": 2, "paymentSettingTaxStatus": 2, "isAllowMcnSetAds": false, "raw": { ... } }`
+
+### 8.2 `get_mcn_partnership_status` (`MinSign_GetMcnPartnershipStatus`)
+Scans an Affiliate account's ongoing MCN partnership (`mcnOngoingPartnershipDetailAndPendingRequest`) and pending MCN invitations (`mcnPendingPartnershipInvitationList`) via `POST https://affiliate.<domain>/api/v3/gql`, with optional automatic REST fallback (`user/profile` + `report/list` `linked_mcn_id`).
+- **Request:** `{ "cookie": "...", "country": "VN", "proxy": "", "pageNum": 1, "pageSize": 20, "fastFallback": true, "fastOnly": false, "includeEntryPoint": false }`
+- **Response `data`:** `{ "source": "gql", "mcnStatus": "linked|invited|none", "mcnId": "...", "mcnName": "...", "partnershipId": "...", "mcnFeeRatePercent": 10, "displayLeftDays": 180, "invitations": [ ... ], "raw": { ... } }`
+
+### 8.3 `reply_mcn_invitation` (`MinSign_ReplyMcnInvitation`) — Accept / Reject MCN Invite (`acp_mcn_invitation`)
+Accepts (`decision: "accept"`) or rejects (`decision: "reject"`) a pending MCN invitation/request via `mutation mcnKOLReplyToMCNRequest` (`https://affiliate.<domain>/api/v3/gql?q=mcnKOLReplyToMCNRequest`). Auto-resolves `mcnId` and `requestId` if omitted, and verifies post-reply partnership state when `verifyAfter: true`.
+- **Request:** `{ "cookie": "...", "decision": "accept", "mcnId": "", "requestId": "", "requestType": "InvitationRequest", "verifyAfter": true, "country": "VN", "proxy": "" }`
+- **Response `data`:** `{ "isSuccess": true, "decision": "accept", "mcnId": "...", "requestId": "...", "partnership": { ... }, "raw": { ... } }`
+
+### 8.4 `get_mcn_kol_partnerships` (`MinSign_GetMcnKolPartnerships`)
+Lists and filters managed KOL/Affiliate contracts from the MCN Portal (`POST https://mcn.affiliate.<domain>/api/v3/gql?q=getMCNAndKOLPartnershipList`), optionally fetching `mcnBasicInfo`, permissions, and system configs (`includeMeta: true`).
+- **Request:** `{ "cookie": "...", "mcnId": "", "affiliateId": "", "affiliateName": "", "tabStatusFilter": "", "pageNum": 1, "pageSize": 20, "includeMeta": false, "country": "VN", "proxy": "" }`
+- **Response `data`:** `{ "count": 20, "partnerships": [ ... ], "pagination": { ... }, "summaryFilterResult": { ... }, "raw": { ... } }`
+
+### 8.5 `send_mcn_partnership_invitation` (`MinSign_SendMcnPartnershipInvitation`)
+Validates an Affiliate username/ID (`checkUsernameWhenMCNSendPartnershipInvitation` / `checkAffiliateIdWhenMCNSendPartnershipInvitation`) and sends a partnership invitation (`MCNSendPartnershipInvitationMutation`) from the MCN Portal.
+- **Request:** `{ "cookie": "...", "mcnId": "888111", "affiliateId": "", "username": "kol_name", "mcnFeeRatePercent": 10, "durationDays": 180, "endDateTimestamp": 0, "validateFirst": true, "country": "VN", "proxy": "" }`
+- **Response `data`:** `{ "isSuccess": true, "mcnId": "888111", "affiliateId": "...", "endDateTimestamp": 1790000000, "raw": { ... } }`
+
+### 8.6 `manage_mcn_partnership` (`MinSign_ManageMcnPartnership`)
+Executes MCN-side contract lifecycle mutations and request history queries on `mcn.affiliate.<domain>/api/v3/gql`:
+- `action: "reply" | "accept" | "reject"` → `MCNReplyToKOLRequestMutation`
+- `action: "change_fee"` → `MCNRequestChangeFeeRateMutation` (`newMcnFeeRatePercent`)
+- `action: "extend"` → `MCNRequestPartnershipExtensionMutation` (`newEndDateTimestamp`)
+- `action: "cancel"` → `MCNCancelPartnershipMutation`
+- `action: "history"` → `getPartnershipRequestHistoryGroupByContractId`
+- **Request:** `{ "cookie": "...", "action": "cancel", "mcnId": "888111", "affiliateId": "123456", "partnershipId": "999222", "country": "VN", "proxy": "" }`
+
+### 8.7 `get_mcn_analytics` (`MinSign_GetMcnAnalytics`)
+Queries MCN Portal analytics and campaigns on `mcn.affiliate.<domain>/api/v3/gql` (`mode`: `"core"` | `"affiliates"` | `"campaigns"` | `"campaign_detail"` | `"info"`).
+- **Request:** `{ "cookie": "...", "mode": "core", "startTime": 1730419200, "endTime": 1733011200, "campaignId": "", "pageNum": 1, "pageSize": 20, "country": "VN", "proxy": "" }`
+
+### 8.8 `get_affiliate_payment_tax` (`MinSign_GetAffiliatePaymentTax`)
+Queries `GET https://affiliate.<domain>/api/v3/payment_setting/display` and normalizes bank status, tax/TIN/CCCD KYC status (`valid` | `pending` | `rejected` | `empty`), and EWT/VAT rates.
+- **Request:** `{ "cookie": "...", "country": "VN", "proxy": "" }`
+- **Response `data`:** `{ "paymentStatus": "valid", "taxStatus": "valid", "bankName": "...", "bankAccountNo": "...", "taxCodeTin": "...", "cccdId": "...", "ewtRate": "10%", "raw": { ... } }`
+
+### 8.9 `get_affiliate_click_report` (`MinSign_GetAffiliateClickReport`)
+Queries `GET https://affiliate.<domain>/api/v1/click_report/list` within a Unix timestamp window to extract click counts and records.
+- **Request:** `{ "cookie": "...", "startTime": 1730419200, "endTime": 1733011200, "pageNum": 1, "pageLimit": 20, "country": "VN", "proxy": "" }`
+
+### 8.10 `get_affiliate_billing` (`MinSign_GetAffiliateBilling`)
+Queries `GET https://affiliate.<domain>/api/v3/payment/billing_list` (with `settlement_cycle=4` for `VN`) and optionally `billing_detail` (`validationId` or `includeDetails: true`), returning normalized gross payouts, tax withheld, MCN deductions, and net payouts.
+- **Request:** `{ "cookie": "...", "days": 365, "validationId": "", "includeDetails": false, "country": "VN", "proxy": "" }`

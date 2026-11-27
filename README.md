@@ -1,18 +1,18 @@
 🌐 **Languages:** [English](README.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md) | [ภาษาไทย](README.th.md) | [简体中文](README.zh.md)
 
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.1.0)
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0%20%C2%B7%2044%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
+[![Release](https://img.shields.io/badge/Release-v2.1.0%20%C2%B7%2054%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
 [![Wrappers](https://img.shields.io/badge/7%20Languages-Python%20%7C%20Node%2FTS%20%7C%20C%23%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Go%20%7C%20Java-10B981?style=for-the-badge)](./docs/QUICKSTART_BY_LANGUAGE.md)
 [![Shopee Regions](https://img.shields.io/badge/8%20Shopee%20Regions-VN%20%7C%20ID%20%7C%20TH%20%7C%20MY%20%7C%20PH%20%7C%20SG%20%7C%20TW%20%7C%20BR-EE4D2D?style=for-the-badge)](#supported-shopee-regions)
 [![Dual Signer](https://img.shields.io/badge/Dual%20Signer-App%20Mobile%20%2B%20Web%20Chrome%20131-2563EB?style=for-the-badge)](#dual-signing-architecture)
 [![Get X-API-Key](https://img.shields.io/badge/Get%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**One native Windows x64 C-ABI library (`minsign_sdk.dll`) — 44 production Shopee & Shopee Affiliate APIs, 7 first-class language wrappers, 8 Shopee regions, and Dual App + Web Security Signing.**
+**One native Windows x64 C-ABI library (`minsign_sdk.dll`) — 54 production Shopee, MCN & Shopee Affiliate APIs, 7 first-class language wrappers, 8 Shopee regions, and Dual App + Web Security Signing.**
 
 Skip browser automation, emulators, and fragile reverse-engineering scripts. Ship high-throughput Shopee scrapers, Affiliate bots, Live Commerce pipelines, Visual Search tools, and Video automation directly from **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go, or Java JNA** using a single zero-runtime DLL with native `uTLS` fingerprinting, sticky Android device vaulting, and multi-threaded Go worker pools.
 
-> 📚 **Documentation Hub:** [Full 44-API JSON Reference](./docs/API_REFERENCE.md) · [Quickstart by Language (7 Stacks)](./docs/QUICKSTART_BY_LANGUAGE.md) · [End-to-End Playbooks](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Changelog](./CHANGELOG.md) · [Vietnamese Deep-Dive Manual](./DOCS_MINSIGN_NATIVE_SDK.md)
+> 📚 **Documentation Hub:** [Full 54-API JSON Reference](./docs/API_REFERENCE.md) · [Quickstart by Language (7 Stacks)](./docs/QUICKSTART_BY_LANGUAGE.md) · [End-to-End Playbooks](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Changelog](./CHANGELOG.md) · [Vietnamese Deep-Dive Manual](./DOCS_MINSIGN_NATIVE_SDK.md)
 
 ---
 
@@ -22,7 +22,7 @@ Every Shopee HTTP/WebSocket call runs **directly from your machine through your 
 
 ```mermaid
 flowchart LR
-    A["Your App<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.0.0)<br/>44 APIs · 48 C-ABI Exports<br/>uTLS · Go Worker Pool · Device Vault"]
+    A["Your App<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.1.0)<br/>54 APIs · 58 C-ABI Exports<br/>uTLS · Go Worker Pool · Device Vault"]
     B -->|X-API-Key<br/>App UniDBG & Web Chrome 131| C["MinSign Cloud Signer<br/>vip-sign.minmintool.site<br/>x-sap-ri · x-sap-sec · af-ac-enc-sz-token"]
     C -->|Dynamic Signatures| B
     B -->|Direct Traffic via Your Proxy<br/>HTTP / SOCKS5| D["8 Shopee Regions<br/>VN · ID · TH · MY<br/>PH · SG · TW · BR"]
@@ -96,7 +96,7 @@ flowchart LR
 1. Visit **[https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)** (supports English, Vietnamese & Thai).
 2. Register or sign in with Google.
 3. Top up a **Pay-As-You-Go** balance or activate a monthly plan (**Basic / Pro / VIP**) and copy your **`X-API-Key`** from **API Keys**.
-4. Initialize `MinSignClient` with your key — all 44 APIs work out of the box.
+4. Initialize `MinSignClient` with your key — all 54 APIs work out of the box.
 
 ---
 
@@ -256,9 +256,9 @@ int main() {
 
 ---
 
-## Complete 44-API Reference (`minsign_sdk.dll` v2.0.0)
+## Complete 54-API Reference (`minsign_sdk.dll` v2.1.0)
 
-> In addition to the **44 Action APIs** below, the DLL exports **4 core C-ABI lifecycle/dispatch functions**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, and `MinSign_Free` (**48 total C-ABI exports**). Full request/response JSON schemas are documented in [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
+> In addition to the **54 Action APIs** below, the DLL exports **4 core C-ABI lifecycle/dispatch functions**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, and `MinSign_Free` (**58 total C-ABI exports**). Full request/response JSON schemas are documented in [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
 
 ### 1. System, Device Vault & Dual Signing (7 APIs)
 
@@ -339,6 +339,21 @@ int main() {
 |---|---|---|---|---|---|
 | 44 | `execute_signed_request` | `MinSign_ExecuteSignedRequest` | Sign & execute **any** Shopee GET/POST endpoint over `uTLS` + Proxy (supports `clientType: "app"\|"web"` & `attachRiskHeaders`) | Optional | `v1.0` / `v2.0` |
 
+### 8. Shopee MCN, Invitation Accept (`acp`) & Affiliate Center (10 APIs — *NEW in v2.1*)
+
+| # | Action (`MinSign_Invoke`) | C-ABI Export | Description | Cookie? | Version |
+|---|---|---|---|---|---|
+| 45 | **`get_affiliate_user_profile`** | **`MinSign_GetAffiliateUserProfile`** | **Fetch Affiliate profile, `affiliateId`, payment/tax & `isAllowMcnSetAds` flags** | **Yes** | **`v2.1`** |
+| 46 | **`get_mcn_partnership_status`** | **`MinSign_GetMcnPartnershipStatus`** | **Scan ongoing MCN partnership & pending invitations (GraphQL + REST fallback)** | **Yes** | **`v2.1`** |
+| 47 | **`reply_mcn_invitation`** (`acp_mcn_invitation`) | **`MinSign_ReplyMcnInvitation`** | **Accept or reject a pending MCN invitation/request (`mcnKOLReplyToMCNRequest`)** | **Yes** | **`v2.1`** |
+| 48 | **`get_mcn_kol_partnerships`** | **`MinSign_GetMcnKolPartnerships`** | **List managed KOL/Affiliate contracts on MCN Portal (`mcn.affiliate.shopee.*`)** | **Yes** | **`v2.1`** |
+| 49 | **`send_mcn_partnership_invitation`** | **`MinSign_SendMcnPartnershipInvitation`** | **Resolve KOL username/ID and send MCN partnership invitation** | **Yes** | **`v2.1`** |
+| 50 | **`manage_mcn_partnership`** | **`MinSign_ManageMcnPartnership`** | **MCN-side contract actions (`reply`\|`accept`\|`reject`\|`change_fee`\|`extend`\|`cancel`\|`history`)** | **Yes** | **`v2.1`** |
+| 51 | **`get_mcn_analytics`** | **`MinSign_GetMcnAnalytics`** | **Query MCN performance metrics, affiliate analytics, campaigns & MCN info** | **Yes** | **`v2.1`** |
+| 52 | **`get_affiliate_payment_tax`** | **`MinSign_GetAffiliatePaymentTax`** | **Fetch normalized bank, TIN/CCCD verification status & EWT/VAT tax rates** | **Yes** | **`v2.1`** |
+| 53 | **`get_affiliate_click_report`** | **`MinSign_GetAffiliateClickReport`** | **Query Shopee Affiliate click analytics (`/api/v1/click_report/list`)** | **Yes** | **`v2.1`** |
+| 54 | **`get_affiliate_billing`** | **`MinSign_GetAffiliateBilling`** | **Fetch payout billing records & per-bill MCN fee deductions** | **Yes** | **`v2.1`** |
+
 ---
 
 ## Supported Shopee Regions
@@ -361,7 +376,7 @@ int main() {
 ```text
 shopeeapi/
 ├── bin/win-x64/
-│   ├── minsign_sdk.dll                    # Native Windows x64 Core Library (v2.0.0 — 48 C-ABI Exports)
+│   ├── minsign_sdk.dll                    # Native Windows x64 Core Library (v2.1.0 — 58 C-ABI Exports)
 │   └── minsign_sdk.h                      # Generated C Header
 ├── include/
 │   └── minsign_sdk.h                      # Standard C / C++ Header
@@ -369,7 +384,7 @@ shopeeapi/
 │   ├── python/minsign_sdk.py              # Python 3.8+ (pure ctypes, 0 dependencies)
 │   ├── nodejs/
 │   │   ├── minsign_sdk.js                 # Node.js / Electron Async Wrapper (koffi)
-│   │   └── minsign_sdk.d.ts               # Full TypeScript Definitions (44 APIs)
+│   │   └── minsign_sdk.d.ts               # Full TypeScript Definitions (54 APIs)
 │   ├── csharp/MinSignSdk.cs               # C# (.NET Framework 4.7.2+ / .NET 6-9 x64)
 │   ├── cpp/minsign_sdk_client.hpp         # C++17 Header-only RAII Wrapper
 │   ├── php/MinSignSdk.php                 # PHP 8.1+ Built-in FFI Wrapper
@@ -377,6 +392,7 @@ shopeeapi/
 │   └── java/MinSignSdk.java               # Java 11+ JNA Wrapper
 ├── examples/
 │   ├── quickstart_python.py               # Python Quickstart
+│   ├── mcn_and_acp_manager.py             # v2.1 MCN Partnership, Accept Invite & Billing Sample
 │   ├── batch_product_scraper.py           # v2.0 Batch Scraper + URL Resolver + Ratings
 │   ├── affiliate_hunter.py                # v2.0 Affiliate Offer Hunter + Batch Converter + Report
 │   ├── live_bag_scraper.py                # v2.0 Live Session + Bag Items + Account Health
@@ -390,10 +406,10 @@ shopeeapi/
 │   ├── quickstart_go.go                   # Go LazyDLL Quickstart
 │   └── QuickstartJava.java                # Java JNA Quickstart
 ├── docs/
-│   ├── API_REFERENCE.md                   # Detailed JSON Contracts for All 44 APIs
+│   ├── API_REFERENCE.md                   # Detailed JSON Contracts for All 54 APIs
 │   ├── QUICKSTART_BY_LANGUAGE.md          # Setup, Architecture & Runnable Snippets (7 Languages)
-│   └── USE_CASES_AND_PLAYBOOKS.md         # 5 End-to-End Production Automation Recipes
-├── CHANGELOG.md                           # Full Version History (v1.0.0 -> v2.0.0)
+│   └── USE_CASES_AND_PLAYBOOKS.md         # End-to-End Production Automation Recipes
+├── CHANGELOG.md                           # Full Version History (v1.0.0 -> v2.1.0)
 ├── DOCS_MINSIGN_NATIVE_SDK.md             # Detailed Technical Manual (Vietnamese)
 ├── DOCS_TIM_SAN_PHAM_BANG_ANH.md          # Visual Search & AI Crop Guide (Vietnamese)
 ├── TERMS_OF_SERVICE.md                    # Legal Terms & Disclaimer
@@ -408,10 +424,10 @@ shopeeapi/
 
 ## Documentation & Guides
 
-- **[`docs/API_REFERENCE.md`](./docs/API_REFERENCE.md)** — Complete request/response JSON contracts for all 44 APIs, error envelope format, proxy & cookie rules.
+- **[`docs/API_REFERENCE.md`](./docs/API_REFERENCE.md)** — Complete request/response JSON contracts for all 54 APIs, error envelope format, proxy & cookie rules.
 - **[`docs/QUICKSTART_BY_LANGUAGE.md`](./docs/QUICKSTART_BY_LANGUAGE.md)** — Installation, `x64` requirements, `MinSign_Free` memory safety, and runnable code for all 7 languages.
-- **[`docs/USE_CASES_AND_PLAYBOOKS.md`](./docs/USE_CASES_AND_PLAYBOOKS.md)** — 5 end-to-end production blueprints (Multi-Region Price Monitor, High-Commission Affiliate Bot, Live Bag Pipeline, Visual Sourcing, Video Auto-Uploader).
-- **[`CHANGELOG.md`](./CHANGELOG.md)** — Complete release notes from `v1.0.0` through `v2.0.0`.
+- **[`docs/USE_CASES_AND_PLAYBOOKS.md`](./docs/USE_CASES_AND_PLAYBOOKS.md)** — End-to-end production blueprints (Multi-Region Price Monitor, High-Commission Affiliate Bot, Live Bag Pipeline, Visual Sourcing, Video Auto-Uploader).
+- **[`CHANGELOG.md`](./CHANGELOG.md)** — Complete release notes from `v1.0.0` through `v2.1.0`.
 - **[`DOCS_MINSIGN_NATIVE_SDK.md`](./DOCS_MINSIGN_NATIVE_SDK.md)** — Deep-dive technical handbook in Vietnamese.
 
 ---

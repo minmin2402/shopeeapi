@@ -54,6 +54,18 @@ public:
         fnGetAffiliateCommissionReport_ = loadSymbol<Fn1>("MinSign_GetAffiliateCommissionReport");
         fnGetLiveBagItems_              = loadSymbol<Fn1>("MinSign_GetLiveBagItems");
 
+        // v2.1.0 C-ABI symbols (MCN, Partnership Accept/Reply & Affiliate Center)
+        fnGetAffiliateUserProfile_       = loadSymbol<Fn1>("MinSign_GetAffiliateUserProfile");
+        fnGetMcnPartnershipStatus_       = loadSymbol<Fn1>("MinSign_GetMcnPartnershipStatus");
+        fnReplyMcnInvitation_            = loadSymbol<Fn1>("MinSign_ReplyMcnInvitation");
+        fnGetMcnKolPartnerships_         = loadSymbol<Fn1>("MinSign_GetMcnKolPartnerships");
+        fnSendMcnPartnershipInvitation_  = loadSymbol<Fn1>("MinSign_SendMcnPartnershipInvitation");
+        fnManageMcnPartnership_          = loadSymbol<Fn1>("MinSign_ManageMcnPartnership");
+        fnGetMcnAnalytics_               = loadSymbol<Fn1>("MinSign_GetMcnAnalytics");
+        fnGetAffiliatePaymentTax_        = loadSymbol<Fn1>("MinSign_GetAffiliatePaymentTax");
+        fnGetAffiliateClickReport_       = loadSymbol<Fn1>("MinSign_GetAffiliateClickReport");
+        fnGetAffiliateBilling_           = loadSymbol<Fn1>("MinSign_GetAffiliateBilling");
+
         if (!fnInit_ || !fnInvoke_ || !fnFree_) {
             closeLibrary();
             throw std::runtime_error("Missing required C-ABI symbols in minsign_sdk.dll");
@@ -138,6 +150,18 @@ public:
     std::string buffLiveView(const std::string& reqJson) const { return invoke("buff_live_view", reqJson); }
     std::string buffLiveBatch(const std::string& reqJson) const { return invoke("buff_live_batch", reqJson); }
 
+    // Group 8: Shopee MCN, Accept/Reply Invitations & Affiliate Center (v2.1.0)
+    std::string getAffiliateUserProfile(const std::string& reqJson) const { return callExport(fnGetAffiliateUserProfile_, "get_affiliate_user_profile", reqJson); }
+    std::string getMcnPartnershipStatus(const std::string& reqJson) const { return callExport(fnGetMcnPartnershipStatus_, "get_mcn_partnership_status", reqJson); }
+    std::string replyMcnInvitation(const std::string& reqJson) const { return callExport(fnReplyMcnInvitation_, "reply_mcn_invitation", reqJson); }
+    std::string getMcnKolPartnerships(const std::string& reqJson) const { return callExport(fnGetMcnKolPartnerships_, "get_mcn_kol_partnerships", reqJson); }
+    std::string sendMcnPartnershipInvitation(const std::string& reqJson) const { return callExport(fnSendMcnPartnershipInvitation_, "send_mcn_partnership_invitation", reqJson); }
+    std::string manageMcnPartnership(const std::string& reqJson) const { return callExport(fnManageMcnPartnership_, "manage_mcn_partnership", reqJson); }
+    std::string getMcnAnalytics(const std::string& reqJson) const { return callExport(fnGetMcnAnalytics_, "get_mcn_analytics", reqJson); }
+    std::string getAffiliatePaymentTax(const std::string& reqJson) const { return callExport(fnGetAffiliatePaymentTax_, "get_affiliate_payment_tax", reqJson); }
+    std::string getAffiliateClickReport(const std::string& reqJson) const { return callExport(fnGetAffiliateClickReport_, "get_affiliate_click_report", reqJson); }
+    std::string getAffiliateBilling(const std::string& reqJson) const { return callExport(fnGetAffiliateBilling_, "get_affiliate_billing", reqJson); }
+
     // Group 7: Universal Signed HTTP Gateway (App + Web via clientType)
     std::string executeSignedRequest(const std::string& reqJson) const { return invoke("execute_signed_request", reqJson); }
 
@@ -188,6 +212,16 @@ private:
     Fn1 fnGetAffiliateOfferList_        = nullptr;
     Fn1 fnGetAffiliateCommissionReport_ = nullptr;
     Fn1 fnGetLiveBagItems_              = nullptr;
+    Fn1 fnGetAffiliateUserProfile_       = nullptr;
+    Fn1 fnGetMcnPartnershipStatus_       = nullptr;
+    Fn1 fnReplyMcnInvitation_            = nullptr;
+    Fn1 fnGetMcnKolPartnerships_         = nullptr;
+    Fn1 fnSendMcnPartnershipInvitation_  = nullptr;
+    Fn1 fnManageMcnPartnership_          = nullptr;
+    Fn1 fnGetMcnAnalytics_               = nullptr;
+    Fn1 fnGetAffiliatePaymentTax_        = nullptr;
+    Fn1 fnGetAffiliateClickReport_       = nullptr;
+    Fn1 fnGetAffiliateBilling_           = nullptr;
 
     std::string initResponse_;
 

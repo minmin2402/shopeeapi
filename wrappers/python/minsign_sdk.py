@@ -38,6 +38,16 @@ class MinSignClient:
         "MinSign_GetAffiliateOfferList",
         "MinSign_GetAffiliateCommissionReport",
         "MinSign_GetLiveBagItems",
+        "MinSign_GetAffiliateUserProfile",
+        "MinSign_GetMcnPartnershipStatus",
+        "MinSign_ReplyMcnInvitation",
+        "MinSign_GetMcnKolPartnerships",
+        "MinSign_SendMcnPartnershipInvitation",
+        "MinSign_ManageMcnPartnership",
+        "MinSign_GetMcnAnalytics",
+        "MinSign_GetAffiliatePaymentTax",
+        "MinSign_GetAffiliateClickReport",
+        "MinSign_GetAffiliateBilling",
     )
 
     def __init__(
@@ -1274,6 +1284,298 @@ class MinSignClient:
                 "staggerMs": stagger_ms,
                 "country": country,
                 "fromSource": from_source,
+            },
+        )["data"]
+
+    # =========================================================================
+    # Group 8: Shopee MCN, Accept/Reply Invitations & Affiliate Center (v2.1.0)
+    # =========================================================================
+
+    def get_affiliate_user_profile(
+        self,
+        cookie: CookieInput,
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+        allow_mobile_fallback: bool = True,
+    ) -> Dict[str, Any]:
+        """Fetch Shopee Affiliate user profile, affiliateId, and KYC/MCN flags (/api/v3/user/profile)."""
+        return self._call_export(
+            "MinSign_GetAffiliateUserProfile",
+            "get_affiliate_user_profile",
+            {
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "allowMobileFallback": allow_mobile_fallback,
+            },
+        )["data"]
+
+    def get_mcn_partnership_status(
+        self,
+        cookie: CookieInput,
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+        page_num: int = 1,
+        page_size: int = 20,
+        fast_fallback: bool = True,
+        fast_only: bool = False,
+        include_entry_point: bool = False,
+    ) -> Dict[str, Any]:
+        """Scan an Affiliate account's ongoing MCN partnership and pending MCN invitations."""
+        return self._call_export(
+            "MinSign_GetMcnPartnershipStatus",
+            "get_mcn_partnership_status",
+            {
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+                "pageNum": page_num,
+                "pageSize": page_size,
+                "fastFallback": fast_fallback,
+                "fastOnly": fast_only,
+                "includeEntryPoint": include_entry_point,
+            },
+        )["data"]
+
+    def reply_mcn_invitation(
+        self,
+        cookie: CookieInput,
+        decision: str = "accept",
+        mcn_id: str = "",
+        request_id: str = "",
+        request_type: str = "InvitationRequest",
+        is_accept: Optional[bool] = None,
+        verify_after: bool = True,
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Accept or reject an MCN partnership invitation/request (auto-resolves pending invitation if IDs omitted)."""
+        payload: Dict[str, Any] = {
+            "cookie": cookie,
+            "decision": decision,
+            "mcnId": mcn_id,
+            "requestId": request_id,
+            "requestType": request_type,
+            "verifyAfter": verify_after,
+            "country": country,
+            "proxy": proxy,
+            "accountId": account_id,
+            "deviceId": device_id,
+        }
+        if is_accept is not None:
+            payload["isAccept"] = is_accept
+        return self._call_export("MinSign_ReplyMcnInvitation", "reply_mcn_invitation", payload)["data"]
+
+    def get_mcn_kol_partnerships(
+        self,
+        cookie: CookieInput,
+        mcn_id: str = "",
+        affiliate_id: str = "",
+        affiliate_name: str = "",
+        tab_status_filter: str = "",
+        page_num: int = 1,
+        page_size: int = 20,
+        include_meta: bool = False,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """List KOL/Affiliate partnerships from the MCN Portal (mcn.affiliate.shopee.*)."""
+        return self._call_export(
+            "MinSign_GetMcnKolPartnerships",
+            "get_mcn_kol_partnerships",
+            {
+                "cookie": cookie,
+                "mcnId": mcn_id,
+                "affiliateId": affiliate_id,
+                "affiliateName": affiliate_name,
+                "tabStatusFilter": tab_status_filter,
+                "pageNum": page_num,
+                "pageSize": page_size,
+                "includeMeta": include_meta,
+                "country": country,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def send_mcn_partnership_invitation(
+        self,
+        cookie: CookieInput,
+        mcn_id: str,
+        mcn_fee_rate_percent: int,
+        affiliate_id: str = "",
+        username: str = "",
+        end_date_timestamp: int = 0,
+        duration_days: int = 0,
+        validate_first: bool = True,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Send an MCN partnership invitation from MCN Portal to an Affiliate/KOL."""
+        return self._call_export(
+            "MinSign_SendMcnPartnershipInvitation",
+            "send_mcn_partnership_invitation",
+            {
+                "cookie": cookie,
+                "mcnId": mcn_id,
+                "affiliateId": affiliate_id,
+                "username": username,
+                "mcnFeeRatePercent": mcn_fee_rate_percent,
+                "endDateTimestamp": end_date_timestamp,
+                "durationDays": duration_days,
+                "validateFirst": validate_first,
+                "country": country,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def manage_mcn_partnership(
+        self,
+        cookie: CookieInput,
+        action: str,
+        mcn_id: str,
+        affiliate_id: str,
+        partnership_id: str = "",
+        request_id: str = "",
+        request_type: str = "",
+        is_accept: Optional[bool] = None,
+        new_mcn_fee_rate_percent: int = 0,
+        new_end_date_timestamp: int = 0,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Manage MCN-side KOL partnerships (reply|accept|reject|change_fee|extend|cancel|history)."""
+        payload: Dict[str, Any] = {
+            "cookie": cookie,
+            "action": action,
+            "mcnId": mcn_id,
+            "affiliateId": affiliate_id,
+            "partnershipId": partnership_id,
+            "requestId": request_id,
+            "requestType": request_type,
+            "newMcnFeeRatePercent": new_mcn_fee_rate_percent,
+            "newEndDateTimestamp": new_end_date_timestamp,
+            "country": country,
+            "proxy": proxy,
+        }
+        if is_accept is not None:
+            payload["isAccept"] = is_accept
+        return self._call_export("MinSign_ManageMcnPartnership", "manage_mcn_partnership", payload)["data"]
+
+    def get_mcn_analytics(
+        self,
+        cookie: CookieInput,
+        mode: str = "core",
+        start_time: int = 0,
+        end_time: int = 0,
+        affiliate_id: str = "",
+        campaign_id: str = "",
+        page_num: int = 1,
+        page_size: int = 20,
+        variables: Optional[Dict[str, Any]] = None,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Query MCN Portal metrics, affiliate analytics, campaigns, campaign detail, or basic info."""
+        return self._call_export(
+            "MinSign_GetMcnAnalytics",
+            "get_mcn_analytics",
+            {
+                "cookie": cookie,
+                "mode": mode,
+                "startTime": start_time,
+                "endTime": end_time,
+                "affiliateId": affiliate_id,
+                "campaignId": campaign_id,
+                "pageNum": page_num,
+                "pageSize": page_size,
+                "variables": variables or {},
+                "country": country,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_affiliate_payment_tax(
+        self,
+        cookie: CookieInput,
+        country: str = "",
+        proxy: str = "",
+        account_id: str = "",
+        device_id: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch normalized bank payment, tax TIN/CCCD, and EWT/VAT settings (/api/v3/payment_setting/display)."""
+        return self._call_export(
+            "MinSign_GetAffiliatePaymentTax",
+            "get_affiliate_payment_tax",
+            {
+                "cookie": cookie,
+                "country": country,
+                "proxy": proxy,
+                "accountId": account_id,
+                "deviceId": device_id,
+            },
+        )["data"]
+
+    def get_affiliate_click_report(
+        self,
+        cookie: CookieInput,
+        start_time: int = 0,
+        end_time: int = 0,
+        page_num: int = 1,
+        page_offset: int = 0,
+        page_limit: int = 20,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch Shopee Affiliate click analytics (/api/v1/click_report/list)."""
+        return self._call_export(
+            "MinSign_GetAffiliateClickReport",
+            "get_affiliate_click_report",
+            {
+                "cookie": cookie,
+                "startTime": start_time,
+                "endTime": end_time,
+                "pageNum": page_num,
+                "pageOffset": page_offset,
+                "pageLimit": page_limit,
+                "country": country,
+                "proxy": proxy,
+            },
+        )["data"]
+
+    def get_affiliate_billing(
+        self,
+        cookie: CookieInput,
+        days: int = 365,
+        start_time: int = 0,
+        end_time: int = 0,
+        validation_id: str = "",
+        include_details: bool = False,
+        country: str = "",
+        proxy: str = "",
+    ) -> Dict[str, Any]:
+        """Fetch Affiliate payout billing list and per-bill details including MCN fee deductions."""
+        return self._call_export(
+            "MinSign_GetAffiliateBilling",
+            "get_affiliate_billing",
+            {
+                "cookie": cookie,
+                "days": days,
+                "startTime": start_time,
+                "endTime": end_time,
+                "validationId": validation_id,
+                "includeDetails": include_details,
+                "country": country,
+                "proxy": proxy,
             },
         )["data"]
 

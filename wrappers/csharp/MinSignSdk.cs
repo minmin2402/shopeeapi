@@ -99,6 +99,37 @@ namespace MinSign
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr MinSign_GetLiveBagItems(IntPtr reqJsonUtf8);
 
+        // v2.1.0 C-ABI exports (10 MCN, Partnership Accept/Reply & Affiliate Center APIs)
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetAffiliateUserProfile(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetMcnPartnershipStatus(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_ReplyMcnInvitation(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetMcnKolPartnerships(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_SendMcnPartnershipInvitation(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_ManageMcnPartnership(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetMcnAnalytics(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetAffiliatePaymentTax(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetAffiliateClickReport(IntPtr reqJsonUtf8);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr MinSign_GetAffiliateBilling(IntPtr reqJsonUtf8);
+
         private bool _disposed;
 
         /// <summary>
@@ -325,6 +356,40 @@ namespace MinSign
 
         /// <summary>Runs concurrent Shopee Live viewer sessions with proxy/cookie rotation.</summary>
         public JsonElement BuffLiveBatch(object request) => Invoke("buff_live_batch", request);
+
+        // =====================================================================
+        // Group 8: Shopee MCN, Accept/Reply Invitations & Affiliate Center (v2.1.0)
+        // =====================================================================
+
+        /// <summary>Fetches Affiliate profile, affiliateId, and MCN/KYC flags (/api/v3/user/profile).</summary>
+        public JsonElement GetAffiliateUserProfile(object request) => CallJsonExport(MinSign_GetAffiliateUserProfile, request);
+
+        /// <summary>Scans ongoing MCN partnership and pending MCN invitations (with REST fallback).</summary>
+        public JsonElement GetMcnPartnershipStatus(object request) => CallJsonExport(MinSign_GetMcnPartnershipStatus, request);
+
+        /// <summary>Accepts or rejects an MCN partnership invitation/request.</summary>
+        public JsonElement ReplyMcnInvitation(object request) => CallJsonExport(MinSign_ReplyMcnInvitation, request);
+
+        /// <summary>Lists KOL/Affiliate partnerships from the MCN Portal.</summary>
+        public JsonElement GetMcnKolPartnerships(object request) => CallJsonExport(MinSign_GetMcnKolPartnerships, request);
+
+        /// <summary>Sends an MCN partnership invitation to a KOL/Affiliate.</summary>
+        public JsonElement SendMcnPartnershipInvitation(object request) => CallJsonExport(MinSign_SendMcnPartnershipInvitation, request);
+
+        /// <summary>Performs MCN Portal partnership actions (reply|accept|reject|change_fee|extend|cancel|history).</summary>
+        public JsonElement ManageMcnPartnership(object request) => CallJsonExport(MinSign_ManageMcnPartnership, request);
+
+        /// <summary>Queries MCN Portal analytics, affiliate metrics, campaigns, or basic info.</summary>
+        public JsonElement GetMcnAnalytics(object request) => CallJsonExport(MinSign_GetMcnAnalytics, request);
+
+        /// <summary>Fetches Affiliate payment bank &amp; tax TIN/CCCD verification settings.</summary>
+        public JsonElement GetAffiliatePaymentTax(object request) => CallJsonExport(MinSign_GetAffiliatePaymentTax, request);
+
+        /// <summary>Fetches Shopee Affiliate click analytics (/api/v1/click_report/list).</summary>
+        public JsonElement GetAffiliateClickReport(object request) => CallJsonExport(MinSign_GetAffiliateClickReport, request);
+
+        /// <summary>Fetches Affiliate payout billing list and details including MCN fee deductions.</summary>
+        public JsonElement GetAffiliateBilling(object request) => CallJsonExport(MinSign_GetAffiliateBilling, request);
 
         // =====================================================================
         // Group 7: Universal Signed HTTP Gateway (App + Web)

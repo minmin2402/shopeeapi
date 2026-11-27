@@ -1,18 +1,18 @@
 🌐 **语言:** [English](README.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md) | [ภาษาไทย](README.th.md) | [简体中文](README.zh.md)
 
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.1.0)
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0%20%C2%B7%2044%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
+[![Release](https://img.shields.io/badge/Release-v2.1.0%20%C2%B7%2054%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
 [![Wrappers](https://img.shields.io/badge/7%20%E7%A7%8D%E8%AF%AD%E8%A8%80-Python%20%7C%20Node%2FTS%20%7C%20C%23%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Go%20%7C%20Java-10B981?style=for-the-badge)](./docs/QUICKSTART_BY_LANGUAGE.md)
 [![Shopee Regions](https://img.shields.io/badge/8%20%E5%A4%A7%E7%AB%99%E7%82%B9-VN%20%7C%20ID%20%7C%20TH%20%7C%20MY%20%7C%20PH%20%7C%20SG%20%7C%20TW%20%7C%20BR-EE4D2D?style=for-the-badge)](#支持的-8-大-shopee-站点)
 [![Dual Signer](https://img.shields.io/badge/%E5%8F%8C%E6%A8%A1%E5%BC%8F%E7%AD%BE%E5%90%8D-App%20Mobile%20%2B%20Web%20Chrome%20131-2563EB?style=for-the-badge)](#双模式签名架构)
 [![Get X-API-Key](https://img.shields.io/badge/%E8%8E%B7%E5%8F%96%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**单文件 Windows x64 原生 C-ABI 核心库（`minsign_sdk.dll`）——内置 44 个生产级 Shopee 与 Shopee Affiliate 接口、7 种主流编程语言官方封装、覆盖 8 大 Shopee 站点，并支持 App Mobile UniDBG + Web Chrome 131 双模式安全签名。**
+**单文件 Windows x64 原生 C-ABI 核心库（`minsign_sdk.dll`）——内置 54 个生产级 Shopee、MCN 与 Shopee Affiliate 接口、7 种主流编程语言官方封装、覆盖 8 大 Shopee 站点，并支持 App Mobile UniDBG + Web Chrome 131 双模式安全签名。**
 
-彻底告别无头浏览器、安卓模拟器与脆弱的逆向脚本。通过单一零依赖 DLL，即可在 **Python、Node.js/TypeScript、C#、C++、PHP 8+ FFI、Go 或 Java JNA** 中直接构建高并发 Shopee 商品采集器、高佣联盟选品机器人、直播间小黄车抓取、以图搜货及 Shopee Video 自动化系统。内置原生 `uTLS` 指纹栈、账号专属安卓设备保险库（`devices_vault.json`）以及 Go 并发协程池。
+彻底告别无头浏览器、安卓模拟器与脆弱的逆向脚本。通过单一零依赖 DLL，即可在 **Python、Node.js/TypeScript、C#、C++、PHP 8+ FFI、Go 或 Java JNA** 中直接构建高并发 Shopee 商品采集器、高佣联盟选品机器人、MCN 机构与自动审批管理、直播间小黄车抓取、以图搜货及 Shopee Video 自动化系统。内置原生 `uTLS` 指纹栈、账号专属安卓设备保险库（`devices_vault.json`）以及 Go 并发协程池。
 
-> 📚 **文档中心：** [44 个 API 完整 JSON 规范 (EN)](./docs/API_REFERENCE.md) · [7 种语言快速上手 (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [5 大实战自动化方案 (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [版本更新日志](./CHANGELOG.md)
+> 📚 **文档中心：** [54 个 API 完整 JSON 规范 (EN)](./docs/API_REFERENCE.md) · [7 种语言快速上手 (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [实战自动化方案 (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [版本更新日志](./CHANGELOG.md)
 
 ---
 
@@ -22,7 +22,7 @@
 
 ```mermaid
 flowchart LR
-    A["您的应用程序<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.0.0)<br/>44 个 API · 48 个 C-ABI 导出<br/>uTLS · Go 并发池 · 设备保险库"]
+    A["您的应用程序<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.1.0)<br/>54 个 API · 58 个 C-ABI 导出<br/>uTLS · Go 并发池 · 设备保险库"]
     B -->|X-API-Key<br/>App UniDBG & Web Chrome 131| C["MinSign Cloud Signer<br/>vip-sign.minmintool.site<br/>x-sap-ri · x-sap-sec · af-ac-enc-sz-token"]
     C -->|动态安全签名| B
     B -->|经由自有代理直连<br/>HTTP / SOCKS5| D["8 大 Shopee 站点<br/>VN · ID · TH · MY<br/>PH · SG · TW · BR"]
@@ -30,7 +30,7 @@ flowchart LR
 
 ---
 
-## v2.0.0 核心能力矩阵
+## v2.1.0 核心能力矩阵
 
 <table>
   <tr>
@@ -96,7 +96,7 @@ flowchart LR
 1. 访问官方控制台：**[https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)**（支持英文、越南语及泰语）。
 2. 注册账号或使用 Google 一键登录。
 3. 充值 **按量计费（Pay-As-You-Go）** 或开通月度套餐（**Basic / Pro / VIP**），在 **API Keys** 页面复制您的 **`X-API-Key`**。
-4. 将 `X-API-Key` 传入 `MinSignClient`，即可立即调用全部 44 个接口。
+4. 将 `X-API-Key` 传入 `MinSignClient`，即可立即调用全部 54 个接口。
 
 ---
 
@@ -165,9 +165,9 @@ Console.WriteLine(flashSale.GetRawText());
 
 ---
 
-## 全部 44 个 API 索引总览（`minsign_sdk.dll` v2.0.0）
+## 全部 54 个 API 索引总览（`minsign_sdk.dll` v2.1.0）
 
-> 除下列 **44 个业务 Action API** 外，DLL 还导出 **4 个核心生命周期/分发函数**：`MinSign_Init`、`MinSign_Version`、`MinSign_Invoke`、`MinSign_Free`（**共 48 个 C-ABI 导出符号**）。详细请求与响应字段请参阅 [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md)。
+> 除下列 **54 个业务 Action API** 外，DLL 还导出 **4 个核心生命周期/分发函数**：`MinSign_Init`、`MinSign_Version`、`MinSign_Invoke`、`MinSign_Free`（**共 58 个 C-ABI 导出符号**）。详细请求与响应字段请参阅 [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md)。
 
 ### 1. 系统、设备库与双模签名（7 个 API）
 
@@ -247,6 +247,21 @@ Console.WriteLine(flashSale.GetRawText());
 | # | Action (`MinSign_Invoke`) | C-ABI 导出名 | 功能说明 | 需 Cookie? | 版本 |
 |---|---|---|---|---|---|
 | 44 | `execute_signed_request` | `MinSign_ExecuteSignedRequest` | 通过 `uTLS` + 代理签名并调用**任意 Shopee GET/POST 接口**（支持 `clientType: "app"\|"web"` 及 `attachRiskHeaders`） | 可选 | `v1.0` / `v2.0` |
+
+### 8. Shopee MCN 机构、邀请审批 (`acp`) 与联盟财务中心（10 个 API — *v2.1 新增*）
+
+| # | Action (`MinSign_Invoke`) | C-ABI 导出名 | 功能说明 | 需 Cookie? | 版本 |
+|---|---|---|---|---|---|
+| 45 | **`get_affiliate_user_profile`** | **`MinSign_GetAffiliateUserProfile`** | **查询联盟账号资料、`affiliateId`、收款税务状态及 `isAllowMcnSetAds`** | **是** | **`v2.1`** |
+| 46 | **`get_mcn_partnership_status`** | **`MinSign_GetMcnPartnershipStatus`** | **扫描当前 MCN 绑定合同与待处理邀请（GraphQL + REST 回退）** | **是** | **`v2.1`** |
+| 47 | **`reply_mcn_invitation`** (`acp_mcn_invitation`) | **`MinSign_ReplyMcnInvitation`** | **同意（`accept`）或拒绝（`reject`）MCN 绑定邀请/申请（`mcnKOLReplyToMCNRequest`）** | **是** | **`v2.1`** |
+| 48 | **`get_mcn_kol_partnerships`** | **`MinSign_GetMcnKolPartnerships`** | **从 MCN 后台（`mcn.affiliate.shopee.*`）获取达人/KOL 合作列表** | **是** | **`v2.1`** |
+| 49 | **`send_mcn_partnership_invitation`** | **`MinSign_SendMcnPartnershipInvitation`** | **校验用户名/ID 并从 MCN 后台向达人发送合作邀请** | **是** | **`v2.1`** |
+| 50 | **`manage_mcn_partnership`** | **`MinSign_ManageMcnPartnership`** | **MCN 侧合同操作（`reply`\|`accept`\|`reject`\|`change_fee`\|`extend`\|`cancel`\|`history`）** | **是** | **`v2.1`** |
+| 51 | **`get_mcn_analytics`** | **`MinSign_GetMcnAnalytics`** | **获取 MCN 核心业绩、达人明细指标、活动列表与机构信息** | **是** | **`v2.1`** |
+| 52 | **`get_affiliate_payment_tax`** | **`MinSign_GetAffiliatePaymentTax`** | **获取标准化银行卡、税号 TIN/身份证状态与 EWT/VAT 税率** | **是** | **`v2.1`** |
+| 53 | **`get_affiliate_click_report`** | **`MinSign_GetAffiliateClickReport`** | **查询联盟推广点击报表（`/api/v1/click_report/list`）** | **是** | **`v2.1`** |
+| 54 | **`get_affiliate_billing`** | **`MinSign_GetAffiliateBilling`** | **查询联盟结算账单列表与详情（含 MCN 服务费扣款明细）** | **是** | **`v2.1`** |
 
 ---
 

@@ -6,6 +6,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ---
 
+## [2.1.0] — 2026-11-27
+
+### Minor Feature Release — 54 Production APIs (+10 MCN, Invitation Accept `acp` & Affiliate Center APIs)
+
+#### Added — Shopee MCN Partnership & Invitation Accept (`affiliate.shopee.*` + `mcn.affiliate.shopee.*`)
+- **`get_affiliate_user_profile` (`MinSign_GetAffiliateUserProfile`)**: Queries `GET https://affiliate.<domain>/api/v3/user/profile` (Web Chrome 131 + Mobile fallback) returning `affiliateId`, `region`, `paymentSettingStatus`, `paymentSettingTaxStatus`, and `isAllowMcnSetAds`.
+- **`get_mcn_partnership_status` (`MinSign_GetMcnPartnershipStatus`)**: Scans `mcnOngoingPartnershipDetailAndPendingRequest` + `mcnPendingPartnershipInvitationList` (plus optional `mcnEntryPointInfoQuery` / `checkAffiliateHasOngoingPartnership`), with automatic REST fallback via `user/profile` + `report/list`.
+- **`reply_mcn_invitation` (`MinSign_ReplyMcnInvitation`)**: Accepts or rejects MCN invitations (`mcnKOLReplyToMCNRequest`) with auto-resolution of `mcnId` / `requestId` and post-reply verification (also accessible via `acp_mcn_invitation` / `accept_mcn_invitation` in `MinSign_Invoke`).
+- **`get_mcn_kol_partnerships` (`MinSign_GetMcnKolPartnerships`)**: Lists KOL/Affiliate partnerships on the MCN Portal (`getMCNAndKOLPartnershipListQuery`) with status/filter support and optional MCN config/permissions metadata.
+- **`send_mcn_partnership_invitation` (`MinSign_SendMcnPartnershipInvitation`)**: Resolves username/affiliateId (`checkUsernameWhenMCNSendPartnershipInvitation` / `checkAffiliateIdWhenMCNSendPartnershipInvitation`) and sends invitations via `MCNSendPartnershipInvitationMutation`.
+- **`manage_mcn_partnership` (`MinSign_ManageMcnPartnership`)**: Executes MCN-side partnership actions (`MCNReplyToKOLRequest`, `MCNRequestChangeFeeRate`, `MCNRequestPartnershipExtension`, `MCNCancelPartnership`, `getPartnershipRequestHistoryGroupByContractId`).
+- **`get_mcn_analytics` (`MinSign_GetMcnAnalytics`)**: Queries MCN core metrics (`queryMCNPerformanceCoreMetrics`), affiliate analytics (`queryMCNAffiliateAnalytics`), campaigns (`campaigns`, `MCNCampaignDetail`), and `getBasicInfo`.
+
+#### Added — Affiliate Creator Center (Payment, Tax, Clicks & Billing)
+- **`get_affiliate_payment_tax` (`MinSign_GetAffiliatePaymentTax`)**: Queries `GET /api/v3/payment_setting/display` with normalized bank, TIN/CCCD, and EWT/VAT tax statuses.
+- **`get_affiliate_click_report` (`MinSign_GetAffiliateClickReport`)**: Queries `GET /api/v1/click_report/list` for click telemetry by time range.
+- **`get_affiliate_billing` (`MinSign_GetAffiliateBilling`)**: Queries `GET /api/v3/payment/billing_list` + `billing_detail` returning normalized gross amount, withheld tax, MCN management deductions, and net payouts.
+
+#### Changed
+- Updated `CountryConfig` (`countries.go`) with `McnAffiliateDomain` (`mcn.affiliate.shopee.*`) across all 8 regions and added `mcn.affiliate.` Origin/Referer handling in `ExecuteSignedRequest`.
+- Updated all 7 language wrappers (`Python`, `Node.js/TS`, `C#`, `C++17`, `PHP 8 FFI`, `Go`, `Java JNA`), rebuilt `minsign_sdk.dll` + `minsign_sdk.h` + `minsign-buff-engine.exe`, and bumped `MinSign_Version()` to `"2.1.0"`.
+
+---
+
 ## [2.0.0] — 2026-11-25
 
 ### Major Release — 44 Production APIs, 7 Language Wrappers & Dual App + Web Security Signing

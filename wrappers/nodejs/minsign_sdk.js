@@ -54,6 +54,18 @@ class MinSignClient {
     this._fnGetAffiliateCommissionReport = MinSignClient._bindOptional(lib, "void* MinSign_GetAffiliateCommissionReport(const char* reqJson)");
     this._fnGetLiveBagItems = MinSignClient._bindOptional(lib, "void* MinSign_GetLiveBagItems(const char* reqJson)");
 
+    // v2.1.0 C-ABI bindings (10 MCN, Partnership Accept/Reply & Affiliate Center APIs)
+    this._fnGetAffiliateUserProfile = MinSignClient._bindOptional(lib, "void* MinSign_GetAffiliateUserProfile(const char* reqJson)");
+    this._fnGetMcnPartnershipStatus = MinSignClient._bindOptional(lib, "void* MinSign_GetMcnPartnershipStatus(const char* reqJson)");
+    this._fnReplyMcnInvitation = MinSignClient._bindOptional(lib, "void* MinSign_ReplyMcnInvitation(const char* reqJson)");
+    this._fnGetMcnKolPartnerships = MinSignClient._bindOptional(lib, "void* MinSign_GetMcnKolPartnerships(const char* reqJson)");
+    this._fnSendMcnPartnershipInvitation = MinSignClient._bindOptional(lib, "void* MinSign_SendMcnPartnershipInvitation(const char* reqJson)");
+    this._fnManageMcnPartnership = MinSignClient._bindOptional(lib, "void* MinSign_ManageMcnPartnership(const char* reqJson)");
+    this._fnGetMcnAnalytics = MinSignClient._bindOptional(lib, "void* MinSign_GetMcnAnalytics(const char* reqJson)");
+    this._fnGetAffiliatePaymentTax = MinSignClient._bindOptional(lib, "void* MinSign_GetAffiliatePaymentTax(const char* reqJson)");
+    this._fnGetAffiliateClickReport = MinSignClient._bindOptional(lib, "void* MinSign_GetAffiliateClickReport(const char* reqJson)");
+    this._fnGetAffiliateBilling = MinSignClient._bindOptional(lib, "void* MinSign_GetAffiliateBilling(const char* reqJson)");
+
     const initPtr = this._fnInit(
       JSON.stringify({
         apiKey: String(apiKey).trim(),
@@ -205,6 +217,18 @@ class MinSignClient {
   getLiveBagItems(req) { return this._callExportAsync(this._fnGetLiveBagItems, "get_live_bag_items", req); }
   buffLiveView(req) { return this.invoke("buff_live_view", req); }
   buffLiveBatch(req) { return this.invoke("buff_live_batch", req); }
+
+  // Group 8: Shopee MCN, Accept/Reply Invitations & Affiliate Center (v2.1.0)
+  getAffiliateUserProfile(req) { return this._callExportAsync(this._fnGetAffiliateUserProfile, "get_affiliate_user_profile", req); }
+  getMcnPartnershipStatus(req) { return this._callExportAsync(this._fnGetMcnPartnershipStatus, "get_mcn_partnership_status", req); }
+  replyMcnInvitation(req) { return this._callExportAsync(this._fnReplyMcnInvitation, "reply_mcn_invitation", req); }
+  getMcnKolPartnerships(req) { return this._callExportAsync(this._fnGetMcnKolPartnerships, "get_mcn_kol_partnerships", req); }
+  sendMcnPartnershipInvitation(req) { return this._callExportAsync(this._fnSendMcnPartnershipInvitation, "send_mcn_partnership_invitation", req); }
+  manageMcnPartnership(req) { return this._callExportAsync(this._fnManageMcnPartnership, "manage_mcn_partnership", req); }
+  getMcnAnalytics(req) { return this._callExportAsync(this._fnGetMcnAnalytics, "get_mcn_analytics", req); }
+  getAffiliatePaymentTax(req) { return this._callExportAsync(this._fnGetAffiliatePaymentTax, "get_affiliate_payment_tax", req); }
+  getAffiliateClickReport(req) { return this._callExportAsync(this._fnGetAffiliateClickReport, "get_affiliate_click_report", req); }
+  getAffiliateBilling(req) { return this._callExportAsync(this._fnGetAffiliateBilling, "get_affiliate_billing", req); }
 
   // Group 7: Universal Signed HTTP Gateway (App + Web)
   executeSignedRequest(req) { return this.invoke("execute_signed_request", req); }

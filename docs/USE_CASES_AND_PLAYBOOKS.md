@@ -1,6 +1,6 @@
-# Production Use Cases & Automation Playbooks (`v2.0.0`)
+# Production Use Cases & Automation Playbooks (`v2.1.0`)
 
-Five end-to-end production blueprints showing how to chain `minsign_sdk.dll` v2.0.0 APIs into resilient, high-throughput Shopee systems. All examples below use the zero-dependency Python wrapper ([`wrappers/python/minsign_sdk.py`](../wrappers/python/minsign_sdk.py)), and every action maps 1:1 to Node.js/TypeScript, C#, C++, PHP FFI, Go, and Java JNA.
+End-to-end production blueprints showing how to chain `minsign_sdk.dll` v2.1.0 APIs into resilient, high-throughput Shopee & MCN systems. All examples below use the zero-dependency Python wrapper ([`wrappers/python/minsign_sdk.py`](../wrappers/python/minsign_sdk.py)), and every action maps 1:1 to Node.js/TypeScript, C#, C++, PHP FFI, Go, and Java JNA.
 
 ---
 

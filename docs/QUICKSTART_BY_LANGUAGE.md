@@ -1,6 +1,6 @@
-# Quickstart by Language — All 7 Official Wrappers (`v2.0.0`)
+# Quickstart by Language — All 7 Official Wrappers (`v2.1.0`)
 
-`minsign_sdk.dll` (`v2.0.0`) exposes a standard **Windows x64 C-ABI** (`44 Action APIs`, `48 C-ABI exports`). Because there are zero external runtime dependencies inside the DLL, you can embed the exact same high-performance engine into **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go, or Java JNA** in minutes.
+`minsign_sdk.dll` (`v2.1.0`) exposes a standard **Windows x64 C-ABI** (`54 Action APIs`, `58 C-ABI exports`). Because there are zero external runtime dependencies inside the DLL, you can embed the exact same high-performance engine into **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go, or Java JNA** in minutes.
 
 ---
 
@@ -8,7 +8,7 @@
 
 1. **64-bit (`x64`) Process Required:** `bin/win-x64/minsign_sdk.dll` is compiled for `windows/amd64`. Ensure your Python, Node.js, .NET (`PlatformTarget=x64`), PHP, Go (`GOARCH=amd64`), Java JVM, or C++ target is **64-bit**. Loading a 64-bit DLL into a 32-bit process triggers `BadImageFormatException` / `OSError: [WinError 193]`.
 2. **Always Free Returned Pointers (`MinSign_Free`):** Every C-ABI function returns a heap-allocated UTF-8 JSON `char*` owned by Go/C. Copy the UTF-8 bytes into a native string and **always invoke `MinSign_Free(ptr)`** in a `try / finally`, `defer`, or RAII destructor. All 7 official wrappers handle this automatically.
-3. **Initialize Once (`MinSign_Init`):** Call `MinSign_Init` once at startup with your `X-API-Key` from [https://vip-sign.minmintool.site](https://vip-sign.minmintool.site). Afterward, all 44 APIs are thread-safe and share the same local `devices_vault.json` and connection pools.
+3. **Initialize Once (`MinSign_Init`):** Call `MinSign_Init` once at startup with your `X-API-Key` from [https://vip-sign.minmintool.site](https://vip-sign.minmintool.site). Afterward, all 54 APIs are thread-safe and share the same local `devices_vault.json` and connection pools.
 4. **Universal Dispatcher (`MinSign_Invoke`):** Every wrapper exposes both strongly named methods (e.g., `resolve_shopee_url`, `get_affiliate_offer_list`) and a generic `invoke(action, payload)` method for forward compatibility.
 
 ---

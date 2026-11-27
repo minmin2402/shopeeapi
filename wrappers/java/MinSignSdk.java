@@ -71,6 +71,26 @@ public final class MinSignSdk implements AutoCloseable {
 
         Pointer MinSign_GetLiveBagItems(byte[] reqJsonUtf8);
 
+        Pointer MinSign_GetAffiliateUserProfile(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetMcnPartnershipStatus(byte[] reqJsonUtf8);
+
+        Pointer MinSign_ReplyMcnInvitation(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetMcnKolPartnerships(byte[] reqJsonUtf8);
+
+        Pointer MinSign_SendMcnPartnershipInvitation(byte[] reqJsonUtf8);
+
+        Pointer MinSign_ManageMcnPartnership(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetMcnAnalytics(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetAffiliatePaymentTax(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetAffiliateClickReport(byte[] reqJsonUtf8);
+
+        Pointer MinSign_GetAffiliateBilling(byte[] reqJsonUtf8);
+
         Pointer MinSign_Invoke(byte[] actionUtf8, byte[] reqJsonUtf8);
 
         void MinSign_Free(Pointer ptr);
@@ -534,6 +554,70 @@ public final class MinSignSdk implements AutoCloseable {
     public String getLiveBagItems(String jsonPayload) {
         ensureOpen();
         return consumePointer(this.nativeLib.MinSign_GetLiveBagItems(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    // =========================================================================
+    // GROUP 8: SHOPEE MCN, ACCEPT/REPLY INVITATIONS & AFFILIATE CENTER (v2.1.0 - 10 Methods)
+    // =========================================================================
+
+    /** [v2.1.0] Fetch Affiliate profile, affiliateId, and KYC/MCN flags (/api/v3/user/profile). */
+    public String getAffiliateUserProfile(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetAffiliateUserProfile(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Scan ongoing MCN partnership and pending MCN invitations. */
+    public String getMcnPartnershipStatus(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetMcnPartnershipStatus(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Accept or reject an MCN partnership invitation/request. */
+    public String replyMcnInvitation(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_ReplyMcnInvitation(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] List KOL/Affiliate partnerships from MCN Portal. */
+    public String getMcnKolPartnerships(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetMcnKolPartnerships(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Send an MCN partnership invitation to an Affiliate/KOL. */
+    public String sendMcnPartnershipInvitation(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_SendMcnPartnershipInvitation(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Manage MCN Portal KOL partnerships (reply|accept|reject|change_fee|extend|cancel|history). */
+    public String manageMcnPartnership(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_ManageMcnPartnership(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Query MCN Portal analytics, affiliate metrics, campaigns, or basic info. */
+    public String getMcnAnalytics(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetMcnAnalytics(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Fetch Affiliate payment bank and tax TIN/CCCD verification settings. */
+    public String getAffiliatePaymentTax(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetAffiliatePaymentTax(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Fetch Shopee Affiliate click analytics (/api/v1/click_report/list). */
+    public String getAffiliateClickReport(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetAffiliateClickReport(toUtf8CString(normalizeJson(jsonPayload))));
+    }
+
+    /** [v2.1.0] Fetch Affiliate payout billing list and details including MCN deductions. */
+    public String getAffiliateBilling(String jsonPayload) {
+        ensureOpen();
+        return consumePointer(this.nativeLib.MinSign_GetAffiliateBilling(toUtf8CString(normalizeJson(jsonPayload))));
     }
 
     @Override

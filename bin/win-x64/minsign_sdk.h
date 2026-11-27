@@ -134,6 +134,16 @@ extern char* MinSign_ClaimShopVoucher(cchar_t* reqJson);
 extern char* MinSign_GetAffiliateOfferList(cchar_t* reqJson);
 extern char* MinSign_GetAffiliateCommissionReport(cchar_t* reqJson);
 extern char* MinSign_GetLiveBagItems(cchar_t* reqJson);
+extern char* MinSign_GetAffiliateUserProfile(cchar_t* reqJson);
+extern char* MinSign_GetMcnPartnershipStatus(cchar_t* reqJson);
+extern char* MinSign_ReplyMcnInvitation(cchar_t* reqJson);
+extern char* MinSign_GetMcnKolPartnerships(cchar_t* reqJson);
+extern char* MinSign_SendMcnPartnershipInvitation(cchar_t* reqJson);
+extern char* MinSign_ManageMcnPartnership(cchar_t* reqJson);
+extern char* MinSign_GetMcnAnalytics(cchar_t* reqJson);
+extern char* MinSign_GetAffiliatePaymentTax(cchar_t* reqJson);
+extern char* MinSign_GetAffiliateClickReport(cchar_t* reqJson);
+extern char* MinSign_GetAffiliateBilling(cchar_t* reqJson);
 extern char* MinSign_ExecuteSignedRequest(cchar_t* reqJson);
 extern char* MinSign_Invoke(cchar_t* action, cchar_t* reqJson);
 

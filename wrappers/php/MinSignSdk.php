@@ -42,6 +42,16 @@ final class MinSignClient
         char* MinSign_GetAffiliateOfferList(const char* reqJson);
         char* MinSign_GetAffiliateCommissionReport(const char* reqJson);
         char* MinSign_GetLiveBagItems(const char* reqJson);
+        char* MinSign_GetAffiliateUserProfile(const char* reqJson);
+        char* MinSign_GetMcnPartnershipStatus(const char* reqJson);
+        char* MinSign_ReplyMcnInvitation(const char* reqJson);
+        char* MinSign_GetMcnKolPartnerships(const char* reqJson);
+        char* MinSign_SendMcnPartnershipInvitation(const char* reqJson);
+        char* MinSign_ManageMcnPartnership(const char* reqJson);
+        char* MinSign_GetMcnAnalytics(const char* reqJson);
+        char* MinSign_GetAffiliatePaymentTax(const char* reqJson);
+        char* MinSign_GetAffiliateClickReport(const char* reqJson);
+        char* MinSign_GetAffiliateBilling(const char* reqJson);
         char* MinSign_Invoke(const char* action, const char* reqJson);
         void  MinSign_Free(char* ptr);
     C;
@@ -743,6 +753,120 @@ final class MinSignClient
     public function getLiveBagItems(array $request): array
     {
         return $this->callDirectJson('MinSign_GetLiveBagItems', $request);
+    }
+
+    // =========================================================================
+    // GROUP 8: SHOPEE MCN, ACCEPT/REPLY INVITATIONS & AFFILIATE CENTER (v2.1.0 - 10 Methods)
+    // =========================================================================
+
+    /**
+     * [v2.1.0] Fetch Affiliate user profile, affiliateId, and MCN/KYC flags (/api/v3/user/profile).
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getAffiliateUserProfile(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetAffiliateUserProfile', $request);
+    }
+
+    /**
+     * [v2.1.0] Scan ongoing MCN partnership and pending MCN invitations.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getMcnPartnershipStatus(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetMcnPartnershipStatus', $request);
+    }
+
+    /**
+     * [v2.1.0] Accept or reject an MCN partnership invitation/request.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function replyMcnInvitation(array $request): array
+    {
+        return $this->callDirectJson('MinSign_ReplyMcnInvitation', $request);
+    }
+
+    /**
+     * [v2.1.0] List KOL/Affiliate partnerships from the MCN Portal.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getMcnKolPartnerships(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetMcnKolPartnerships', $request);
+    }
+
+    /**
+     * [v2.1.0] Send an MCN partnership invitation to an Affiliate/KOL.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function sendMcnPartnershipInvitation(array $request): array
+    {
+        return $this->callDirectJson('MinSign_SendMcnPartnershipInvitation', $request);
+    }
+
+    /**
+     * [v2.1.0] Perform MCN Portal actions (reply|accept|reject|change_fee|extend|cancel|history).
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function manageMcnPartnership(array $request): array
+    {
+        return $this->callDirectJson('MinSign_ManageMcnPartnership', $request);
+    }
+
+    /**
+     * [v2.1.0] Query MCN Portal analytics, affiliate metrics, campaigns, or basic info.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getMcnAnalytics(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetMcnAnalytics', $request);
+    }
+
+    /**
+     * [v2.1.0] Fetch Affiliate bank payment and tax TIN/CCCD settings.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getAffiliatePaymentTax(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetAffiliatePaymentTax', $request);
+    }
+
+    /**
+     * [v2.1.0] Fetch Shopee Affiliate click analytics (/api/v1/click_report/list).
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getAffiliateClickReport(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetAffiliateClickReport', $request);
+    }
+
+    /**
+     * [v2.1.0] Fetch Affiliate payout billing list and details including MCN fee deductions.
+     *
+     * @param array<string, mixed> $request
+     * @return array<string, mixed>
+     */
+    public function getAffiliateBilling(array $request): array
+    {
+        return $this->callDirectJson('MinSign_GetAffiliateBilling', $request);
     }
 
     // =========================================================================

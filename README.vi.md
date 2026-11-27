@@ -1,18 +1,18 @@
 🌐 **Ngôn ngữ:** [English](README.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md) | [ภาษาไทย](README.th.md) | [简体中文](README.zh.md)
 
-# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.0.0)
+# ShopeeAPI — MinSign Native Universal SDK (`minsign_sdk.dll` v2.1.0)
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0%20%C2%B7%2044%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
+[![Release](https://img.shields.io/badge/Release-v2.1.0%20%C2%B7%2054%20APIs-8B5CF6?style=for-the-badge)](./CHANGELOG.md)
 [![Wrappers](https://img.shields.io/badge/7%20Ng%C3%B4n%20Ng%E1%BB%AF-Python%20%7C%20Node%2FTS%20%7C%20C%23%20%7C%20C%2B%2B%20%7C%20PHP%20%7C%20Go%20%7C%20Java-10B981?style=for-the-badge)](./docs/QUICKSTART_BY_LANGUAGE.md)
 [![Shopee Regions](https://img.shields.io/badge/8%20Th%E1%BB%8B%20Tr%C6%B0%E1%BB%9Dng-VN%20%7C%20ID%20%7C%20TH%20%7C%20MY%20%7C%20PH%20%7C%20SG%20%7C%20TW%20%7C%20BR-EE4D2D?style=for-the-badge)](#8-thị-trường-shopee-hỗ-trợ)
 [![Dual Signer](https://img.shields.io/badge/K%C3%BD%20K%C3%A9p-App%20Mobile%20%2B%20Web%20Chrome%20131-2563EB?style=for-the-badge)](#kiến-trúc-ký-kép-app--web)
 [![Get X-API-Key](https://img.shields.io/badge/L%E1%BA%A5y%20X--API--Key-vip--sign.minmintool.site-F59E0B?style=for-the-badge)](https://vip-sign.minmintool.site)
 
-**Một file thư viện gốc Windows x64 C-ABI duy nhất (`minsign_sdk.dll`) — tích hợp trọn bộ 44 API Shopee & Shopee Affiliate chuẩn sản xuất, 7 Wrapper chính thức, 8 quốc gia Shopee và Hệ thống Ký Bảo Mật Kép (App Mobile UniDBG + Web Chrome 131).**
+**Một file thư viện gốc Windows x64 C-ABI duy nhất (`minsign_sdk.dll`) — tích hợp trọn bộ 54 API Shopee, MCN & Shopee Affiliate chuẩn sản xuất, 7 Wrapper chính thức, 8 quốc gia Shopee và Hệ thống Ký Bảo Mật Kép (App Mobile UniDBG + Web Chrome 131).**
 
-Không cần mở trình duyệt, không cần giả lập Android hay tự bảo trì thuật toán chống bot. Xây dựng ngay các hệ thống quét dữ liệu Shopee tốc độ cao, Bot săn Affiliate hoa hồng cao, công cụ Shopee Live & Shopee Video, hay tìm nguồn hàng bằng hình ảnh từ **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go hoặc Java JNA** với tầng mạng `uTLS` gốc, kho thiết bị cố định `devices_vault.json` và Goroutine Worker Pool đa luồng ngay bên trong DLL.
+Không cần mở trình duyệt, không cần giả lập Android hay tự bảo trì thuật toán chống bot. Xây dựng ngay các hệ thống quét dữ liệu Shopee tốc độ cao, Bot săn Affiliate hoa hồng cao, quản lý MCN & duyệt lời mời tự động, công cụ Shopee Live & Shopee Video, hay tìm nguồn hàng bằng hình ảnh từ **Python, Node.js/TypeScript, C#, C++, PHP 8+ FFI, Go hoặc Java JNA** với tầng mạng `uTLS` gốc, kho thiết bị cố định `devices_vault.json` và Goroutine Worker Pool đa luồng ngay bên trong DLL.
 
-> 📚 **Trung Tâm Tài Liệu:** [Đặc Tả JSON 44 API (EN)](./docs/API_REFERENCE.md) · [Quickstart 7 Ngôn Ngữ (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [5 Kịch Bản Tự Động Hóa Thực Chiến (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Lịch Sử Phiên Bản](./CHANGELOG.md) · [Cẩm Nang Kỹ Thuật Chi Tiết (Tiếng Việt)](./DOCS_MINSIGN_NATIVE_SDK.md)
+> 📚 **Trung Tâm Tài Liệu:** [Đặc Tả JSON 54 API (EN)](./docs/API_REFERENCE.md) · [Quickstart 7 Ngôn Ngữ (EN)](./docs/QUICKSTART_BY_LANGUAGE.md) · [Kịch Bản Tự Động Hóa Thực Chiến (EN)](./docs/USE_CASES_AND_PLAYBOOKS.md) · [Lịch Sử Phiên Bản](./CHANGELOG.md) · [Cẩm Nang Kỹ Thuật Chi Tiết (Tiếng Việt)](./DOCS_MINSIGN_NATIVE_SDK.md)
 
 ---
 
@@ -22,7 +22,7 @@ Mọi kết nối tới Shopee (HTTP/WebSocket) đều đi **trực tiếp từ 
 
 ```mermaid
 flowchart LR
-    A["Ứng Dụng Của Bạn<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.0.0)<br/>44 APIs · 48 Hàm C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
+    A["Ứng Dụng Của Bạn<br/>Python · Node/TS · C# · C++<br/>PHP FFI · Go · Java JNA"] -->|UTF-8 JSON C-ABI| B["minsign_sdk.dll (v2.1.0)<br/>54 APIs · 58 Hàm C-ABI<br/>uTLS · Go Worker Pool · Device Vault"]
     B -->|X-API-Key<br/>App UniDBG & Web Chrome 131| C["MinSign Cloud Signer<br/>vip-sign.minmintool.site<br/>x-sap-ri · x-sap-sec · af-ac-enc-sz-token"]
     C -->|Chữ Ký Bảo Mật Động| B
     B -->|Gọi Trực Tiếp Qua Proxy Riêng<br/>HTTP / SOCKS5| D["8 Thị Trường Shopee<br/>VN · ID · TH · MY<br/>PH · SG · TW · BR"]
@@ -30,7 +30,7 @@ flowchart LR
 
 ---
 
-## Bạn Có Thể Xây Dựng Những Gì Với v2.0.0?
+## Bạn Có Thể Xây Dựng Những Gì Với v2.1.0?
 
 <table>
   <tr>
@@ -96,7 +96,7 @@ flowchart LR
 1. Truy cập cổng dịch vụ chính thức: **[https://vip-sign.minmintool.site](https://vip-sign.minmintool.site)** (hỗ trợ Tiếng Việt, Tiếng Anh & Tiếng Thái).
 2. Đăng ký hoặc đăng nhập nhanh bằng Google.
 3. Nạp ví **Pay-As-You-Go** hoặc kích hoạt gói tháng (**Basic / Pro / VIP**) rồi sao chép **`X-API-Key`** tại mục **API Keys**.
-4. Truyền `X-API-Key` vào `MinSignClient` và sử dụng trọn bộ 44 API ngay lập tức.
+4. Truyền `X-API-Key` vào `MinSignClient` và sử dụng trọn bộ 54 API ngay lập tức.
 
 ---
 
@@ -168,9 +168,9 @@ Console.WriteLine(flashSale.GetRawText());
 
 ---
 
-## Bảng Tra Cứu Toàn Bộ 44 API (`minsign_sdk.dll` v2.0.0)
+## Bảng Tra Cứu Toàn Bộ 54 API (`minsign_sdk.dll` v2.1.0)
 
-> Ngoài **44 Action API** dưới đây, DLL còn xuất **4 hàm lõi C-ABI**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, `MinSign_Free` (**tổng 48 hàm C-ABI**). Xem JSON đầu vào/đầu ra chi tiết tại [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
+> Ngoài **54 Action API** dưới đây, DLL còn xuất **4 hàm lõi C-ABI**: `MinSign_Init`, `MinSign_Version`, `MinSign_Invoke`, `MinSign_Free` (**tổng 58 hàm C-ABI**). Xem JSON đầu vào/đầu ra chi tiết tại [**`docs/API_REFERENCE.md`**](./docs/API_REFERENCE.md).
 
 ### 1. Hệ Thống, Kho Thiết Bị & Ký Kép App/Web (7 API)
 
@@ -250,6 +250,21 @@ Console.WriteLine(flashSale.GetRawText());
 | # | Action (`MinSign_Invoke`) | Hàm C-ABI | Chức Năng | Cần Cookie? | Phiên Bản |
 |---|---|---|---|---|---|
 | 44 | `execute_signed_request` | `MinSign_ExecuteSignedRequest` | Ký & gọi **mọi** API GET/POST của Shopee qua `uTLS` + Proxy (`clientType: "app"\|"web"` & `attachRiskHeaders`) | Tuỳ chọn | `v1.0` / `v2.0` |
+
+### 8. Shopee MCN, Duyệt Lời Mời (`acp`) & Trung Tâm Affiliate (10 API — *MỚI trong v2.1*)
+
+| # | Action (`MinSign_Invoke`) | Hàm C-ABI | Chức Năng | Cần Cookie? | Phiên Bản |
+|---|---|---|---|---|---|
+| 45 | **`get_affiliate_user_profile`** | **`MinSign_GetAffiliateUserProfile`** | **Lấy hồ sơ Affiliate, `affiliateId`, trạng thái Thanh toán/Thuế & cờ `isAllowMcnSetAds`** | **Có** | **`v2.1`** |
+| 46 | **`get_mcn_partnership_status`** | **`MinSign_GetMcnPartnershipStatus`** | **Quét trạng thái hợp tác MCN hiện tại & danh sách lời mời MCN (GraphQL + fallback REST)** | **Có** | **`v2.1`** |
+| 47 | **`reply_mcn_invitation`** (`acp_mcn_invitation`) | **`MinSign_ReplyMcnInvitation`** | **Chấp nhận (`accept`) hoặc từ chối (`reject`) lời mời / yêu cầu MCN (`mcnKOLReplyToMCNRequest`)** | **Có** | **`v2.1`** |
+| 48 | **`get_mcn_kol_partnerships`** | **`MinSign_GetMcnKolPartnerships`** | **Lấy danh sách hợp tác KOL/Affiliate trên Cổng MCN (`mcn.affiliate.shopee.*`)** | **Có** | **`v2.1`** |
+| 49 | **`send_mcn_partnership_invitation`** | **`MinSign_SendMcnPartnershipInvitation`** | **Kiểm tra username/affiliateId và gửi lời mời hợp tác từ Cổng MCN tới KOL** | **Có** | **`v2.1`** |
+| 50 | **`manage_mcn_partnership`** | **`MinSign_ManageMcnPartnership`** | **Thao tác hợp đồng phía MCN (`reply`\|`accept`\|`reject`\|`change_fee`\|`extend`\|`cancel`\|`history`)** | **Có** | **`v2.1`** |
+| 51 | **`get_mcn_analytics`** | **`MinSign_GetMcnAnalytics`** | **Thống kê doanh thu/đơn MCN, chỉ số KOL, chiến dịch MCN & thông tin MCN** | **Có** | **`v2.1`** |
+| 52 | **`get_affiliate_payment_tax`** | **`MinSign_GetAffiliatePaymentTax`** | **Kiểm tra trạng thái Ngân hàng, Thuế TIN/CCCD & thuế suất EWT/VAT** | **Có** | **`v2.1`** |
+| 53 | **`get_affiliate_click_report`** | **`MinSign_GetAffiliateClickReport`** | **Lấy báo cáo lượt Click Affiliate (`/api/v1/click_report/list`)** | **Có** | **`v2.1`** |
+| 54 | **`get_affiliate_billing`** | **`MinSign_GetAffiliateBilling`** | **Đối soát hóa đơn thanh toán Affiliate & chi tiết khấu trừ phí MCN** | **Có** | **`v2.1`** |
 
 ---
 

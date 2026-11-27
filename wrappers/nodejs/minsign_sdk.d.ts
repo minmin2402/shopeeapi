@@ -593,6 +593,16 @@ export type MinSignAction =
   | "get_live_bag_items"
   | "buff_live_view"
   | "buff_live_batch"
+  | "get_affiliate_user_profile"
+  | "get_mcn_partnership_status"
+  | "reply_mcn_invitation"
+  | "get_mcn_kol_partnerships"
+  | "send_mcn_partnership_invitation"
+  | "manage_mcn_partnership"
+  | "get_mcn_analytics"
+  | "get_affiliate_payment_tax"
+  | "get_affiliate_click_report"
+  | "get_affiliate_billing"
   | "execute_signed_request"
   | (string & {});
 
@@ -659,6 +669,18 @@ export declare class MinSignClient {
   getLiveBagItems(req: GetLiveBagItemsRequest): Promise<JsonObject>;
   buffLiveView(req: BuffLiveViewRequest): Promise<JsonObject>;
   buffLiveBatch(req: BuffLiveBatchRequest): Promise<JsonObject>;
+
+  // Group 8: Shopee MCN, Accept/Reply Invitations & Affiliate Center (v2.1.0)
+  getAffiliateUserProfile(req: JsonObject): Promise<JsonObject>;
+  getMcnPartnershipStatus(req: JsonObject): Promise<JsonObject>;
+  replyMcnInvitation(req: JsonObject): Promise<JsonObject>;
+  getMcnKolPartnerships(req: JsonObject): Promise<JsonObject>;
+  sendMcnPartnershipInvitation(req: JsonObject): Promise<JsonObject>;
+  manageMcnPartnership(req: JsonObject): Promise<JsonObject>;
+  getMcnAnalytics(req: JsonObject): Promise<JsonObject>;
+  getAffiliatePaymentTax(req: JsonObject): Promise<JsonObject>;
+  getAffiliateClickReport(req: JsonObject): Promise<JsonObject>;
+  getAffiliateBilling(req: JsonObject): Promise<JsonObject>;
 
   // Group 7: Universal Signed HTTP Gateway (App + Web)
   executeSignedRequest(req: ExecuteSignedRequestInput): Promise<JsonObject>;

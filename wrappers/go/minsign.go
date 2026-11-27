@@ -86,6 +86,16 @@ type Client struct {
 	procGetAffiliateOfferList    *syscall.LazyProc
 	procGetAffiliateCommReport   *syscall.LazyProc
 	procGetLiveBagItems          *syscall.LazyProc
+	procGetAffiliateUserProfile  *syscall.LazyProc
+	procGetMcnPartnershipStatus  *syscall.LazyProc
+	procReplyMcnInvitation       *syscall.LazyProc
+	procGetMcnKolPartnerships    *syscall.LazyProc
+	procSendMcnInvitation        *syscall.LazyProc
+	procManageMcnPartnership     *syscall.LazyProc
+	procGetMcnAnalytics          *syscall.LazyProc
+	procGetAffiliatePaymentTax   *syscall.LazyProc
+	procGetAffiliateClickReport  *syscall.LazyProc
+	procGetAffiliateBilling      *syscall.LazyProc
 	procInvoke                   *syscall.LazyProc
 	procFree                     *syscall.LazyProc
 	initInfo                     map[string]any
@@ -139,10 +149,20 @@ func NewClient(cfg Config) (*Client, error) {
 		procGetAccountProfile:      dll.NewProc("MinSign_GetAccountProfile"),
 		procGetCartSummary:         dll.NewProc("MinSign_GetCartSummary"),
 		procClaimShopVoucher:       dll.NewProc("MinSign_ClaimShopVoucher"),
-		procGetAffiliateOfferList:  dll.NewProc("MinSign_GetAffiliateOfferList"),
-		procGetAffiliateCommReport: dll.NewProc("MinSign_GetAffiliateCommissionReport"),
-		procGetLiveBagItems:        dll.NewProc("MinSign_GetLiveBagItems"),
-		procInvoke:                 dll.NewProc("MinSign_Invoke"),
+		procGetAffiliateOfferList:    dll.NewProc("MinSign_GetAffiliateOfferList"),
+		procGetAffiliateCommReport:   dll.NewProc("MinSign_GetAffiliateCommissionReport"),
+		procGetLiveBagItems:          dll.NewProc("MinSign_GetLiveBagItems"),
+		procGetAffiliateUserProfile:  dll.NewProc("MinSign_GetAffiliateUserProfile"),
+		procGetMcnPartnershipStatus:  dll.NewProc("MinSign_GetMcnPartnershipStatus"),
+		procReplyMcnInvitation:       dll.NewProc("MinSign_ReplyMcnInvitation"),
+		procGetMcnKolPartnerships:    dll.NewProc("MinSign_GetMcnKolPartnerships"),
+		procSendMcnInvitation:        dll.NewProc("MinSign_SendMcnPartnershipInvitation"),
+		procManageMcnPartnership:     dll.NewProc("MinSign_ManageMcnPartnership"),
+		procGetMcnAnalytics:          dll.NewProc("MinSign_GetMcnAnalytics"),
+		procGetAffiliatePaymentTax:   dll.NewProc("MinSign_GetAffiliatePaymentTax"),
+		procGetAffiliateClickReport:  dll.NewProc("MinSign_GetAffiliateClickReport"),
+		procGetAffiliateBilling:      dll.NewProc("MinSign_GetAffiliateBilling"),
+		procInvoke:                   dll.NewProc("MinSign_Invoke"),
 		procFree:                   dll.NewProc("MinSign_Free"),
 	}
 
@@ -517,6 +537,60 @@ func (c *Client) BuffLiveBatch(req any) (map[string]any, error) {
 // GetLiveBagItems [v2.0.0] extracts products pinned in a Shopee Live shopping bag.
 func (c *Client) GetLiveBagItems(req any) (map[string]any, error) {
 	return c.callDirectOrInvoke(c.procGetLiveBagItems, "get_live_bag_items", req)
+}
+
+// ============================================================================
+// GROUP 8: MCN PARTNERSHIP, ACCEPT/REPLY INVITATIONS & AFFILIATE CENTER (v2.1.0 - 10 Methods)
+// ============================================================================
+
+// GetAffiliateUserProfile [v2.1.0] fetches Shopee Affiliate profile, affiliateId, and KYC/MCN flags.
+func (c *Client) GetAffiliateUserProfile(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetAffiliateUserProfile, "get_affiliate_user_profile", req)
+}
+
+// GetMcnPartnershipStatus [v2.1.0] scans ongoing MCN partnership and pending MCN invitations.
+func (c *Client) GetMcnPartnershipStatus(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetMcnPartnershipStatus, "get_mcn_partnership_status", req)
+}
+
+// ReplyMcnInvitation [v2.1.0] accepts or rejects an MCN partnership invitation/request.
+func (c *Client) ReplyMcnInvitation(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procReplyMcnInvitation, "reply_mcn_invitation", req)
+}
+
+// GetMcnKolPartnerships [v2.1.0] lists KOL/Affiliate partnerships from MCN Portal.
+func (c *Client) GetMcnKolPartnerships(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetMcnKolPartnerships, "get_mcn_kol_partnerships", req)
+}
+
+// SendMcnPartnershipInvitation [v2.1.0] sends an MCN invitation to an Affiliate/KOL.
+func (c *Client) SendMcnPartnershipInvitation(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procSendMcnInvitation, "send_mcn_partnership_invitation", req)
+}
+
+// ManageMcnPartnership [v2.1.0] performs MCN Portal actions (reply|change_fee|extend|cancel|history).
+func (c *Client) ManageMcnPartnership(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procManageMcnPartnership, "manage_mcn_partnership", req)
+}
+
+// GetMcnAnalytics [v2.1.0] queries MCN performance core metrics, affiliate analytics, campaigns, or info.
+func (c *Client) GetMcnAnalytics(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetMcnAnalytics, "get_mcn_analytics", req)
+}
+
+// GetAffiliatePaymentTax [v2.1.0] fetches normalized bank payment, tax TIN/CCCD, and EWT/VAT settings.
+func (c *Client) GetAffiliatePaymentTax(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetAffiliatePaymentTax, "get_affiliate_payment_tax", req)
+}
+
+// GetAffiliateClickReport [v2.1.0] fetches Shopee Affiliate click analytics (/api/v1/click_report/list).
+func (c *Client) GetAffiliateClickReport(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetAffiliateClickReport, "get_affiliate_click_report", req)
+}
+
+// GetAffiliateBilling [v2.1.0] fetches payout billing records and per-bill MCN fee deductions.
+func (c *Client) GetAffiliateBilling(req any) (map[string]any, error) {
+	return c.callDirectOrInvoke(c.procGetAffiliateBilling, "get_affiliate_billing", req)
 }
 
 // ============================================================================
